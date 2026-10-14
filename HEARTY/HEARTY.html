@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HEARTY.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="hearty-obp-scaffold1-qc-workflow">HEARTY OBP scaffold_1 QC workflow</h1>
+<p>See github for HEARTY: https://github.com/BiodiversityExtinction/HEARTY/tree/main</p>
+<p><em><strong>Goal of HEARTY:</strong></em> <em>evaluate how sensitive heterozygosity and ROH inference are to different allele balance thresholds, particularly in low-coverage and historical samples.</em></p>
+<p>This workflow runs HEARTY on OBP BAM files to examine:</p>
+<ul>
+<li>minor allele balance distributions</li>
+<li>transition/transversion patterns</li>
+<li>window heterozygosity</li>
+<li>ROH sensitivity across different heterozygote thresholds.</li>
+</ul>
+<br/>
+<h2 id="why-hearty-is-useful">Why HEARTY is useful</h2>
+<h3 id="problem">Problem</h3>
+<p>With low coveraege and historical data we are dealing with two conflicting issues: 1. Overestimation of het sites due to low coverage 2. Underdetection of het sites because of reference bias</p>
+<h3 id="1-overestimation-of-heterozygous-sites-due-to-sequencing-errors-and-damage">1. Overestimation of heterozygous sites due to sequencing errors and damage</h3>
+<p>Low-coverage and historical genomic data can contain elevated levels of:</p>
+<ul>
+<li>sequencing error</li>
+<li>ancient DNA damage</li>
+<li>contamination</li>
+</ul>
+<p>These issues can produce low-frequency alternate reads that may appear heterozygous even though they might be artefacts.</p>
+<p>Therefore distinguishing true alternate alleles is tricky. If we have 20% of reads in a site that support the minor allele, could this be a true heterzygoste or a an error?</p>
+<blockquote>
+<p>Example high coverage site:
+Major allele count = 17
+Minor allele count = 4
+AB = 4 / 20 = 0.20</p>
+</blockquote>
+<p>This becomes especially important in low-coverage data, where very small differences in read counts can strongly affect heterozygote inference:</p>
+<blockquote>
+<p>Example low coverage site:
+Major allele count = 5
+Minor allele count = 1
+AB = 1 / 5 = 0.20</p>
+</blockquote>
+<p>This issue is particularly relevant when using genotype likelihood frameworks like ANGSD, where low-frequency minor reads  contribute probabilistically to heterozygote likelihoods (see low coverage example above). Under low-coverage conditions, this uncertainty can sometimes inflate heterozygosity estimates relative to stricter genotype-calling approaches.
+In contrast, traditional genotype callers generally apply stricter genotype assignment thresholds, which can reduce false-positive heterozygous calls but may also miss true variation in low-coverage samples.</p>
+<h3 id="2-underdetection-of-heterozygous-sites-due-to-reference-bias-and-low-coverage-uncertainty">2. Underdetection of heterozygous sites due to reference bias and low coverage uncertainty</h3>
+<p>Historical samples may also experience stronger reference bias because reads can be more diverged from the (often) modern reference genome.
+This can lead to:</p>
+<ul>
+<li>reduced mapping of alternate alleles</li>
+<li>preferential alignment of reference-supporting reads</li>
+<li>excess homozygous reference calls</li>
+</ul>
+<p>As a result, true heterozygous sites may be missed, leading to underestimation of heterozygosity and genetic diversity.</p>
+<h3 id="consequence">Consequence</h3>
+<p>Strict thresholds might remove true biological variation but lenient thresholds might lead to false positives.</p>
+<h3 id="how-hearty-is-helpful">How HEARTY is helpful</h3>
+<p>HEARTY is useful because i allows these competing effects to be explored systematically across multiple allele balance thresholds and filtering schemes.</p>
+<br>
+<h2 id="main-question-hearty-addresses">Main question HEARTY addresses</h2>
+<p><em><strong>“How much do heterozygosity and ROH results change depending on how strict I am about calling heterozygous sites and defining ROHs?”</strong></em></p>
+<p>A key robustness test is:
+<em><strong>“Do the biological conclusions remain consistent under different or stricter thresholds?”</strong></em></p>
+<h2 id="main-goal-of-hearty">Main goal of HEARTY</h2>
+<p>The main purpose of HEARTY is to determine biologically reasonable minor allele balance thresholds for a dataset by systematically comparing:</p>
+<ul>
+<li>heterozygosity estimates</li>
+<li>transition/transversion patterns</li>
+<li>window heterozygosity</li>
+<li>ROH inference</li>
+</ul>
+<p>across multiple filtering thresholds.</p>
+<p>Rather than assuming a single threshold is correct, HEARTY allows sensitivity analyses to determine whether conclusions are robust to parameter choice.</p>
+<h2 id="main-vairables-that-hearty-examines">Main vairables that HEARTY examines</h2>
+<ol>
+<li>Minor AB threshold: 0.15, 0.20, 0.35...</li>
+<li>Site set: Transitions+Transversion, Transversions only</li>
+<li>Alpha: 0.2, 0.3, 0.5</li>
+</ol>
+<h2 id="metrics">Metrics</h2>
+<ul>
+<li>mean heterozygosity</li>
+<li>raw FROH</li>
+<li>bridged FROH</li>
+<li>FROH &gt;1 Mb</li>
+<li>FROH &gt;5 Mb</li>
+<li></li>
+</ul>
+<h2 id="inputs-and-requierements">Inputs and requierements</h2>
+<ul>
+<li>BAM list: one BAM per line</li>
+<li>reference genome</li>
+<li>HEARTY scripts</li>
+<li>ANGSD</li>
+<li>R and Python environments (check HEARTY repo)</li>
+</ul>
+<h2 id="workflow">Workflow</h2>
+<ol>
+<li>Run HEARTY
+↓</li>
+<li>Plot minor allele balance / frequency outputs
+↓</li>
+<li>Parse HEARTY het window files and calculate pooled thresholds
+↓</li>
+<li>Generate run_roh_sensitivity.sh
+↓</li>
+<li>Submit/run run_roh_sensitivity.sh
+↓</li>
+<li>Summarise ROH sensitivity outputs into ROH_summary_all.tsv
+↓</li>
+<li>Plot ROH/FROH sensitivity from ROH_summary_all.tsv</li>
+</ol>
+<h2 id="parameters-i-used-for-this-workflow-adjust-if-needed">Parameters I used for this workflow (ADJUST IF NEEDED)</h2>
+<ul>
+<li>minimum depth: 4</li>
+<li>maximum depth: 50</li>
+<li>HEARTY minor allele balance thresholds: 0.15, 0.20, 0.25, 0.30</li>
+<li>region: scaffold_1</li>
+<li>ROH thresholds: 0.0001, 0.0005, 0.001</li>
+</ul>
+<br>
+<h2 id="1-running-hearty-python-script">1. Running HEARTY python script</h2>
+<p>First we need to actually run the HEARTY python script with the parameters we have set earlier.</p>
+<details> 
+<summary> HEARTY.py wrapper </summary>
+This is the script I used:
+<pre class="hljs"><code><div><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment">#SBATCH --job-name=HEARTY_scaf1</span>
+<span class="hljs-comment">#SBATCH --time=03:00:00</span>
+<span class="hljs-comment">#SBATCH --cpus-per-task=4</span>
+<span class="hljs-comment">#SBATCH --qos=normal</span>
+<span class="hljs-comment">#SBATCH --partition=cpuqueue</span>
+<span class="hljs-comment">#SBATCH --array=1-35%10</span>
+<span class="hljs-comment">#SBATCH --output=jobs/%x_%A_%a.out</span>
+<span class="hljs-comment">#SBATCH --error=jobs/%x_%A_%a.err</span>
+<span class="hljs-comment">#SBATCH --mail-type=END,FAIL</span>
+<span class="hljs-comment">#SBATCH --mail-user=amb230@kent.ac.uk</span>
+ 
+<span class="hljs-comment"># Script to run HEARTY to test allele balances per sample</span>
+
+
+module purge
+module load perl/5.38.0 gsl/2.5 bcftools/1.21 python
+
+DIR=<span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY"</span>
+<span class="hljs-built_in">cd</span> <span class="hljs-variable">$DIR</span>
+
+BAM_LIST_COMBINED=<span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/scripts/OBPs/list_OBPs_combined.txt"</span>
+REF=<span class="hljs-string">"/projects/erode/people/qhk515/reference_genomes/OBP/bNeochry1.pri.20230906.fa"</span>
+<span class="hljs-comment">#LUKE_LIST_SCAF1="/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/tests_scaf1/scaf1_callable_sites.txt.tab"</span>
+
+<span class="hljs-comment"># Get sample name from BAM list based on SLURM_ARRAY_TASK_ID</span>
+BAM=$(sed -n <span class="hljs-string">"<span class="hljs-variable">${SLURM_ARRAY_TASK_ID}</span>p"</span> <span class="hljs-variable">${BAM_LIST_COMBINED}</span>)
+<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">"<span class="hljs-variable">${BAM}</span>"</span> ]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"No BAM file found for SLURM_ARRAY_TASK_ID <span class="hljs-variable">${SLURM_ARRAY_TASK_ID}</span>"</span>
+    <span class="hljs-built_in">exit</span> 1
+<span class="hljs-keyword">fi</span>
+
+SAMPLE=$(basename <span class="hljs-string">"<span class="hljs-variable">${BAM}</span>"</span> .rmdup.bam)
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Processing sample <span class="hljs-variable">${SAMPLE}</span> with BAM file <span class="hljs-variable">${BAM}</span>"</span>
+
+<span class="hljs-comment"># Apply HEARTY</span>
+
+<span class="hljs-comment">#All scaffold 1</span>
+MAXDEPTH=<span class="hljs-string">"50"</span>
+MINDEPTH=<span class="hljs-string">"4"</span>
+
+python3 /projects/erode/people/qhk515/software/HEARTY/HEARTY.py --bam <span class="hljs-variable">${BAM}</span> \
+    -o <span class="hljs-variable">${SAMPLE}</span>.allscaf1 --cores <span class="hljs-variable">${SLURM_CPUS_PER_TASK}</span> \
+    --regions <span class="hljs-string">"scaffold_1"</span> --angsd /opt/shared_software/shared_envmodules/conda/angsd-0.940/bin/angsd --force \
+    --threshold 0.15 \
+    --threshold 0.20 \
+    --threshold 0.25 \
+    --threshold 0.30 \
+    --min-depth <span class="hljs-variable">${MINDEPTH}</span> \
+    --max-depth <span class="hljs-variable">${MAXDEPTH}</span> \
+    --reuse-existing
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Finished running HEARTY for <span class="hljs-variable">$SAMPLE</span> "</span>
+
+<span class="hljs-built_in">exit</span> 0
+</div></code></pre>
+</details>
+<h2 id="2-explore-minor-allele-balance-outputs">2. Explore minor allele balance outputs</h2>
+<p>Now we want to run the scripts that calculate the frequencies of each kind of mutation. This creates individual plots:</p>
+<details>
+<summary> Plot_MinorFreq.R wrapper </summary>
+<pre class="hljs"><code><div><span class="hljs-comment"># Later I can test different depth filters because default is 10x</span>
+<span class="hljs-comment"># I tend to run this in a screen session because it's quite quick</span>
+module purge
+
+module load miniconda
+conda activate r_env
+
+DIR=<span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results"</span>
+<span class="hljs-built_in">cd</span> <span class="hljs-variable">$DIR</span>
+
+mkdir -p plots_freq
+<span class="hljs-built_in">cd</span> plots_freq
+
+<span class="hljs-keyword">for</span> FILE <span class="hljs-keyword">in</span> <span class="hljs-variable">${DIR}</span>/*.minorfreq.txt; <span class="hljs-keyword">do</span>
+    NAME=$(basename <span class="hljs-string">"<span class="hljs-variable">${FILE}</span>"</span> <span class="hljs-string">".minorfreq.txt"</span>)
+    
+    Rscript  /projects/erode/people/qhk515/software/HEARTY/Plot_MinorFreq.R \
+    --minorfreq-file <span class="hljs-variable">${FILE}</span> \
+    --out <span class="hljs-variable">${NAME}</span> \
+    --format pdf
+<span class="hljs-keyword">done</span>
+</div></code></pre>
+</details>
+<p>After running, the script you can examine the individual plots.</p>
+<p>Or you can create new plots in R:</p>
+<details>
+<summary> R script </summary>
+<pre class="hljs"><code><div>
+<span class="hljs-keyword">library</span>(readr)
+<span class="hljs-keyword">library</span>(dplyr)
+<span class="hljs-keyword">library</span>(tidyr)
+<span class="hljs-keyword">library</span>(stringr)
+<span class="hljs-keyword">library</span>(purrr)
+<span class="hljs-keyword">library</span>(ggplot2)
+<span class="hljs-keyword">library</span>(patchwork)
+
+
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+<span class="hljs-comment"># 1. Directory containing HEARTY minorfreq files</span>
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+indir &lt;- <span class="hljs-string">"/Users/alexandrabrumwell/OneDrive - University of Kent/PhD stuff/PhD research/Research projects/01_OBP/Analyses/Het/HEARTY/minorfreq"</span>
+dir.create(indir, showWarnings = <span class="hljs-literal">FALSE</span>)
+
+setwd(indir)
+
+plot_dir &lt;- <span class="hljs-string">"plots"</span>
+
+dir.create(plot_dir, showWarnings = <span class="hljs-literal">FALSE</span>)
+
+
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+<span class="hljs-comment"># 2. Find raw minorfreq files</span>
+<span class="hljs-comment">#    Adjust pattern if needed</span>
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+files &lt;- list.files(
+  path = indir,
+  pattern = <span class="hljs-string">"minorfreq\\.txt$"</span>,
+  full.names = <span class="hljs-literal">TRUE</span>
+)
+
+<span class="hljs-comment"># Exclude summary files</span>
+files &lt;- files[!str_detect(files, <span class="hljs-string">"summary"</span>)]
+
+files
+
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+<span class="hljs-comment"># 3. Read and combine all individuals</span>
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+
+pair_types &lt;- tibble(
+  pair = c(<span class="hljs-string">"AC"</span>, <span class="hljs-string">"AG"</span>, <span class="hljs-string">"AT"</span>, <span class="hljs-string">"CG"</span>, <span class="hljs-string">"CT"</span>, <span class="hljs-string">"GT"</span>),
+  mutation_type = c(
+    <span class="hljs-string">"Transversion"</span>,
+    <span class="hljs-string">"Transition"</span>,
+    <span class="hljs-string">"Transversion"</span>,
+    <span class="hljs-string">"Transversion"</span>,
+    <span class="hljs-string">"Transition"</span>,
+    <span class="hljs-string">"Transversion"</span>
+  )
+)
+
+minor_df &lt;- map_dfr(files, <span class="hljs-keyword">function</span>(f) {
+  
+  sample_name &lt;- basename(f) %&gt;%
+    str_remove(<span class="hljs-string">"\\.allscaf1\\.mincov4.*minorfreq\\.txt$"</span>)
+  
+  read_tsv(f, show_col_types = <span class="hljs-literal">FALSE</span>) %&gt;%
+    pivot_longer(
+      cols = c(AC, AG, AT, CG, CT, GT),
+      names_to = <span class="hljs-string">"pair"</span>,
+      values_to = <span class="hljs-string">"count"</span>
+    ) %&gt;%
+    left_join(pair_types, by = <span class="hljs-string">"pair"</span>) %&gt;%
+    mutate(
+      sample = sample_name,
+      file = basename(f)
+    )
+})
+
+minor_df &lt;- minor_df %&gt;%
+  mutate(
+    pair = factor(pair, levels = c(<span class="hljs-string">"AC"</span>, <span class="hljs-string">"AG"</span>, <span class="hljs-string">"AT"</span>, <span class="hljs-string">"CG"</span>, <span class="hljs-string">"CT"</span>, <span class="hljs-string">"GT"</span>)),
+    mutation_type = factor(mutation_type, levels = c(<span class="hljs-string">"Transition"</span>, <span class="hljs-string">"Transversion"</span>))
+  ) %&gt;%
+  mutate(
+    Group = if_else(
+      str_starts(sample, <span class="hljs-string">"O-"</span>),
+      <span class="hljs-string">"Modern"</span>,
+      <span class="hljs-string">"Historical"</span>
+    )
+  )
+
+str(minor_df)
+
+
+<span class="hljs-comment"># Add coverage</span>
+coverage_df &lt;- tribble(
+  ~sample, ~MeanCoverage,
+  <span class="hljs-string">"O-76339-001"</span>, <span class="hljs-number">7.18</span>,
+  <span class="hljs-string">"O-76349-001"</span>, <span class="hljs-number">7.43</span>,
+  <span class="hljs-string">"O-76350-001"</span>, <span class="hljs-number">6.95</span>,
+  <span class="hljs-string">"O-76521-001"</span>, <span class="hljs-number">7.04</span>,
+  <span class="hljs-string">"O-76523-001"</span>, <span class="hljs-number">7.08</span>,
+  <span class="hljs-string">"O-76526-001"</span>, <span class="hljs-number">7.07</span>,
+  <span class="hljs-string">"O-76538-001"</span>, <span class="hljs-number">7.07</span>,
+  <span class="hljs-string">"O-81171-001"</span>, <span class="hljs-number">7.10</span>,
+  <span class="hljs-string">"O-81175-001"</span>, <span class="hljs-number">7.09</span>,
+  <span class="hljs-string">"O-81179-001"</span>, <span class="hljs-number">7.26</span>,
+  <span class="hljs-string">"O-81182-001"</span>, <span class="hljs-number">6.97</span>,
+  <span class="hljs-string">"O-81186-001"</span>, <span class="hljs-number">6.84</span>,
+  <span class="hljs-string">"O-81188-001"</span>, <span class="hljs-number">7.01</span>,
+  <span class="hljs-string">"O-81192-001"</span>, <span class="hljs-number">7.16</span>,
+  <span class="hljs-string">"O-81193-001"</span>, <span class="hljs-number">7.10</span>,
+  <span class="hljs-string">"O-81196-001"</span>, <span class="hljs-number">6.95</span>,
+  <span class="hljs-string">"O-81198-001"</span>, <span class="hljs-number">6.08</span>,
+  <span class="hljs-string">"O-81201-001"</span>, <span class="hljs-number">7.01</span>,
+  <span class="hljs-string">"O-81203-001"</span>, <span class="hljs-number">6.93</span>,
+  <span class="hljs-string">"OBPI_501"</span>, <span class="hljs-number">24.06</span>,
+  <span class="hljs-string">"OBPI_502"</span>, <span class="hljs-number">9.97</span>,
+  <span class="hljs-string">"OBPI_503"</span>, <span class="hljs-number">7.24</span>,
+  <span class="hljs-string">"OBPI_504"</span>, <span class="hljs-number">17.67</span>,
+  <span class="hljs-string">"OBPI_505"</span>, <span class="hljs-number">2.42</span>,
+  <span class="hljs-string">"OBPI_506"</span>, <span class="hljs-number">4.86</span>,
+  <span class="hljs-string">"OBPI_507"</span>, <span class="hljs-number">5.77</span>,
+  <span class="hljs-string">"OBPI_508"</span>, <span class="hljs-number">3.91</span>,
+  <span class="hljs-string">"OBPII_ReHoI_501"</span>, <span class="hljs-number">5.10</span>,
+  <span class="hljs-string">"OBPII_ReHoI_502"</span>, <span class="hljs-number">6.71</span>,
+  <span class="hljs-string">"OBPII_ReHoI_503"</span>, <span class="hljs-number">3.94</span>,
+  <span class="hljs-string">"OBPII_ReHoI_504"</span>, <span class="hljs-number">7.60</span>,
+  <span class="hljs-string">"OBPII_ReHoI_505"</span>, <span class="hljs-number">2.64</span>,
+  <span class="hljs-string">"OBPII_ReHoI_506"</span>, <span class="hljs-number">4.03</span>,
+  <span class="hljs-string">"OBPII_ReHoI_507"</span>, <span class="hljs-number">9.06</span>,
+  <span class="hljs-string">"OBPII_ReHoI_508"</span>, <span class="hljs-number">10.24</span>
+)
+
+<span class="hljs-comment"># Join coverage</span>
+minor_df &lt;- minor_df %&gt;%
+  left_join(coverage_df, by = <span class="hljs-string">"sample"</span>)
+
+
+<span class="hljs-comment">#Coverage labels for plots</span>
+minor_df &lt;- minor_df %&gt;%
+  mutate(sample_cov = paste0(sample, <span class="hljs-string">" ("</span>, MeanCoverage, <span class="hljs-string">"x)"</span>))
+<span class="hljs-comment"># Reorder samples</span>
+minor_df &lt;- minor_df %&gt;%
+  mutate(sample_cov = forcats::fct_reorder(sample_cov, MeanCoverage))
+
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+<span class="hljs-comment"># PLOT 1: one panel per individual, shared y axis</span>
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+
+p &lt;- ggplot(
+  data = minor_df %&gt;% 
+    filter(Group == <span class="hljs-string">"Historical"</span> | sample ==  <span class="hljs-string">"O-76339-001"</span>),
+  <span class="hljs-comment">#data = minor_df %&gt;% filter(sample ==  "O-76339-001"),</span>
+  aes(
+    x = freq,
+    y = count,
+    colour = pair,
+    shape = mutation_type
+  )
+) +
+  geom_point(size = <span class="hljs-number">0.9</span>, alpha = <span class="hljs-number">0.8</span>) +
+  geom_line(aes(group = pair), linewidth = <span class="hljs-number">0.5</span>, alpha = <span class="hljs-number">0.7</span>) +
+  facet_wrap(Group ~ sample_cov, scales = <span class="hljs-string">"fixed"</span>, ncol = <span class="hljs-number">4</span>) +
+  theme_bw() +
+  labs(
+    x = <span class="hljs-string">"Allele balance / minor allele frequency"</span>,
+    y = <span class="hljs-string">"Number of sites"</span>,
+    colour = <span class="hljs-string">"Base change"</span>,
+    shape = <span class="hljs-string">"Mutation type"</span>,
+    title = <span class="hljs-string">"Minor allele balance distribution across historical samples OBP individuals (and one modern individual)"</span>,
+    subtitle = <span class="hljs-string">"Samples ordered by increasing coverage.  &gt; 4x depth threshold was applied for all sites."</span>
+  ) +
+  theme(
+    legend.position = <span class="hljs-string">"bottom"</span>,
+    strip.text = element_text(size = <span class="hljs-number">6</span>),  
+    axis.text.x = element_text(angle = <span class="hljs-number">45</span>, hjust = <span class="hljs-number">1</span>),
+    <span class="hljs-comment"># Smaller text</span>
+    legend.text = element_text(size = <span class="hljs-number">8</span>),
+    legend.title = element_text(size = <span class="hljs-number">9</span>),
+    
+  )
+p
+ggsave(
+  filename = file.path(plot_dir, <span class="hljs-string">"01_OBP_minorfreq_all_individuals_shared_y.pdf"</span>),
+  plot = p,
+  width = <span class="hljs-number">12</span>,
+  height = <span class="hljs-number">8</span>
+)
+
+
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+<span class="hljs-comment"># PLOT 2: Cumulative thresholds</span>
+<span class="hljs-comment"># ------------------------------------------------------------</span>
+cdf_pair_df &lt;- minor_df %&gt;%
+  group_by(sample, Group, sample_cov, pair, mutation_type, freq) %&gt;%
+  summarise(
+    total_sites = sum(count, na.rm = <span class="hljs-literal">TRUE</span>),
+    .groups = <span class="hljs-string">"drop"</span>
+  ) %&gt;%
+  group_by(sample, Group, sample_cov, pair, mutation_type) %&gt;%
+  arrange(freq, .by_group = <span class="hljs-literal">TRUE</span>) %&gt;%
+  mutate(
+    cum_sites = cumsum(total_sites),
+    cum_prop_sites = cum_sites / sum(total_sites)
+  ) %&gt;%
+  ungroup()
+
+p_cdf_pair &lt;- ggplot(
+  data = cdf_pair_df %&gt;%
+    filter(Group == <span class="hljs-string">"Historical"</span> | sample == <span class="hljs-string">"O-76339-001"</span>) %&gt;%
+    filter(sample != <span class="hljs-string">"OBPI_504"</span>),
+  aes(x = freq, y = cum_prop_sites, colour = pair, linetype = mutation_type)
+) +
+  geom_line(linewidth = <span class="hljs-number">0.6</span>, alpha = <span class="hljs-number">0.8</span>) +
+  geom_vline(
+    xintercept = c(<span class="hljs-number">0.05</span>, <span class="hljs-number">0.10</span>, <span class="hljs-number">0.20</span>, <span class="hljs-number">0.25</span>, <span class="hljs-number">0.30</span>),
+    linetype = <span class="hljs-string">"dashed"</span>,
+    alpha = <span class="hljs-number">0.35</span>
+  ) +
+  facet_wrap(~ sample_cov, scales = <span class="hljs-string">"fixed"</span>, ncol = <span class="hljs-number">4</span>) +
+  theme_bw() +
+  labs(
+    x = <span class="hljs-string">"Allele balance / minor allele frequency threshold"</span>,
+    y = <span class="hljs-string">"Cumulative proportion of sites - only historical samples"</span>,
+    colour = <span class="hljs-string">"Base change"</span>,
+    linetype = <span class="hljs-string">"Mutation type"</span>,
+    title = <span class="hljs-string">"Cumulative allele balance distribution by mutation class"</span>,
+    subtitle = <span class="hljs-string">"Each line shows the cumulative proportion of sites for one base-change class"</span>
+  ) +
+  theme(
+    legend.position = <span class="hljs-string">"bottom"</span>,
+    strip.text = element_text(size = <span class="hljs-number">6</span>),
+    axis.text.x = element_text(angle = <span class="hljs-number">45</span>, hjust = <span class="hljs-number">1</span>)
+  )
+
+p_cdf_pair
+
+ggsave(
+  filename = file.path(plot_dir, <span class="hljs-string">"02_OBP_cumulative_thresholds_by_mutation_pair.pdf"</span>),
+  plot = p_cdf_pair,
+  width = <span class="hljs-number">12</span>,
+  height = <span class="hljs-number">8</span>
+)
+
+
+<span class="hljs-comment"># PLOT 3: TRANSITION/ TRANSVERSION RATIO</span>
+titv_df &lt;- minor_df %&gt;%
+  
+  group_by(Group, sample, freq, mutation_type) %&gt;%
+  
+  summarise(count = sum(count), .groups = <span class="hljs-string">"drop"</span>) %&gt;%
+  
+  pivot_wider(
+    names_from = mutation_type,
+    values_from = count
+  ) %&gt;%
+  
+  mutate(
+    TiTv = Transition / Transversion
+  )
+
+p3 &lt;- ggplot(
+  titv_df,
+  aes(x = freq, y = TiTv, group = sample, colour = Group)
+) +
+  geom_line(alpha = <span class="hljs-number">0.25</span>) +
+  stat_summary(
+    aes(group = Group),
+    fun = mean,
+    geom = <span class="hljs-string">"line"</span>,
+    linewidth = <span class="hljs-number">1.5</span>
+  ) +
+  theme_bw() +
+  labs(
+    x = <span class="hljs-string">"Allele balance"</span>,
+    y = <span class="hljs-string">"Transition / Transversion ratio"</span>,
+    title = <span class="hljs-string">"Ti/Tv ratio across allele balance"</span>
+  )
+p3 
+ggsave(file.path(plot_dir, <span class="hljs-string">"03_TSTV_hist_mod.pdf"</span>), p3, width = <span class="hljs-number">10</span>, height = <span class="hljs-number">8</span>)
+
+</div></code></pre>
+</details>
+<h2 id="3-calculate-adaptive-roh-thresholds">3. Calculate adaptive ROH thresholds</h2>
+<p>This workflow has three conceptual steps:</p>
+<blockquote>
+<ol>
+<li>Generate heterozygosity windows using different heterozygote thresholds</li>
+<li>Define ROHs relative to the heterozygosity distribution</li>
+<li>Compare how ROH/FROH changes across parameter combinations</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>Importantly, this analysis uses an alpha value which scales the ROH thresholds (i.e. how many het windows are allowed in a ROH) relative to the data itself because baseline heterozygoisty can vary across inividuals. So using a singular threshold would not be correct or compareable across indivudals. The higher the alpha, the higher the ROH threshold, i.e. the more lenient the threshold is.</p>
+</blockquote>
+<h3 id="3a-generate-heterozygosity-windows-using-different-heterozygote-thresholds">3A. Generate heterozygosity windows using different heterozygote thresholds</h3>
+<details>
+<summary> Create wrapper for ROH_Plot_Tool.R  </summary>
+<p>Now we can run a script that calculates het per window and ROHs.</p>
+<p>This is based on Hernans script and the script from the HEARTY repository:</p>
+<pre class="hljs"><code><div>R
+<span class="hljs-keyword">library</span>(data.table)
+<span class="hljs-keyword">library</span>(stringr)
+<span class="hljs-keyword">library</span>(ggplot2)
+
+<span class="hljs-comment"># Run this on HPC</span>
+DIR &lt;- <span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH"</span>
+dir.create(DIR, showWarnings = <span class="hljs-literal">FALSE</span>)
+
+setwd(DIR)
+
+PLOT_DIR &lt;- <span class="hljs-string">"plots"</span>
+dir.create(PLOT_DIR, showWarnings = <span class="hljs-literal">FALSE</span>)
+
+
+files &lt;- list.files(
+  path = <span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/"</span>,
+  pattern = <span class="hljs-string">"windows(_trv)?\\.txt\\.gz$"</span>,
+  full.names = <span class="hljs-literal">TRUE</span>
+)
+files
+
+parse_hearty_windows &lt;- <span class="hljs-keyword">function</span>(f) {
+
+  lines &lt;- readLines(gzfile(f), warn = <span class="hljs-literal">FALSE</span>)
+
+  m &lt;- str_match(
+    lines,
+    <span class="hljs-string">"^(\\S+)\\s+(\\d+)-(\\d+):\\s+(\\d+)\\s+sites,\\s+(\\d+)\\s+sites\\s+with\\s+'HET',\\s+Proportion:\\s+([0-9.eE+-]+)"</span>
+  )
+
+  x &lt;- data.table(
+    chrom = m[, <span class="hljs-number">2</span>],
+    start = as.integer(m[, <span class="hljs-number">3</span>]),
+    end = as.integer(m[, <span class="hljs-number">4</span>]),
+    total_sites = as.integer(m[, <span class="hljs-number">5</span>]),
+    het_sites = as.integer(m[, <span class="hljs-number">6</span>]),
+    prop = as.numeric(m[, <span class="hljs-number">7</span>])
+  )
+
+  x &lt;- x[!is.na(chrom)]
+
+  base &lt;- basename(f)
+
+  x[, file := f]
+  x[, file_id := sub(<span class="hljs-string">"\\.txt\\.gz$"</span>, <span class="hljs-string">""</span>, base)]
+  x[, sampleID := str_split_fixed(base, <span class="hljs-string">"_het"</span>, <span class="hljs-number">2</span>)[, <span class="hljs-number">1</span>]]
+  x[, hetTsh := as.numeric(str_match(base, <span class="hljs-string">"_het([0-9.]+)\\.mincov"</span>)[, <span class="hljs-number">2</span>])]
+  x[, site_set := ifelse(grepl(<span class="hljs-string">"_trv\\.txt\\.gz$"</span>, base), <span class="hljs-string">"trv"</span>, <span class="hljs-string">"all"</span>)]
+  x[, window_bp := end - start + <span class="hljs-number">1</span>]
+  x[, callable_fraction := total_sites / window_bp]
+
+  <span class="hljs-keyword">return</span>(x)
+}
+
+W &lt;- rbindlist(lapply(files, parse_hearty_windows), fill = <span class="hljs-literal">TRUE</span>)
+
+fwrite(W, paste0(DIR,<span class="hljs-string">"/"</span>,<span class="hljs-string">"HEARTY_all_windows_parsed.tsv.gz"</span>), sep = <span class="hljs-string">"\t"</span>)
+
+W
+
+W[, prop := as.numeric(prop)]
+W[, total_sites := as.numeric(total_sites)]
+W[, het_sites := as.numeric(het_sites)]
+W[, hetTsh := as.numeric(hetTsh)]
+
+S &lt;- W[, .(
+  n_windows = as.integer(.N),
+  mean_het = as.numeric(mean(prop, na.rm = <span class="hljs-literal">TRUE</span>)),
+  median_het = as.numeric(median(prop, na.rm = <span class="hljs-literal">TRUE</span>)),
+  q001 = as.numeric(quantile(prop, <span class="hljs-number">0.001</span>, na.rm = <span class="hljs-literal">TRUE</span>)),
+  q005 = as.numeric(quantile(prop, <span class="hljs-number">0.005</span>, na.rm = <span class="hljs-literal">TRUE</span>)),
+  q01  = as.numeric(quantile(prop, <span class="hljs-number">0.01</span>,  na.rm = <span class="hljs-literal">TRUE</span>)),
+  q025 = as.numeric(quantile(prop, <span class="hljs-number">0.025</span>, na.rm = <span class="hljs-literal">TRUE</span>)),
+  q05  = as.numeric(quantile(prop, <span class="hljs-number">0.05</span>,  na.rm = <span class="hljs-literal">TRUE</span>)),
+  q10  = as.numeric(quantile(prop, <span class="hljs-number">0.10</span>,  na.rm = <span class="hljs-literal">TRUE</span>)),
+  median_sites = as.numeric(median(total_sites, na.rm = <span class="hljs-literal">TRUE</span>)),
+  mean_sites = as.numeric(mean(total_sites, na.rm = <span class="hljs-literal">TRUE</span>))
+), by = .(file, file_id, sampleID, hetTsh, site_set)]
+
+fwrite(S, paste0(DIR,<span class="hljs-string">"/"</span>,<span class="hljs-string">"HEARTY_window_het_summary_by_file.tsv"</span>), sep = <span class="hljs-string">"\t"</span>)
+
+S[order(site_set, hetTsh, sampleID)]
+
+W[, log_prop := log10(prop + <span class="hljs-number">1e-8</span>)]
+
+<span class="hljs-comment"># Plotting</span>
+P &lt;- ggplot(W, aes(x = log_prop, colour = sampleID)) +
+  geom_density(linewidth = <span class="hljs-number">0.4</span>) +
+  facet_grid(site_set ~ hetTsh, scales = <span class="hljs-string">"free_y"</span>) +
+  theme_bw() +
+  labs(
+    x = <span class="hljs-string">"log10(window heterozygosity + 1e-8)"</span>,
+    y = <span class="hljs-string">"Density"</span>,
+    title = <span class="hljs-string">"Window heterozygosity distributions"</span>, 
+  ) +
+  theme(
+    legend.position = <span class="hljs-string">"bottom"</span>,
+    
+    <span class="hljs-comment"># Smaller text</span>
+    legend.text = element_text(size = <span class="hljs-number">6</span>),
+    legend.title = element_text(size = <span class="hljs-number">7</span>),
+    
+    <span class="hljs-comment"># Smaller spacing/keys</span>
+    legend.key.size = unit(<span class="hljs-number">0.3</span>, <span class="hljs-string">"cm"</span>),
+    legend.spacing.x = unit(<span class="hljs-number">0.1</span>, <span class="hljs-string">"cm"</span>),
+    
+    <span class="hljs-comment"># Optional</span>
+    legend.margin = margin(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>)
+  )
+
+ggsave(paste0(PLOT_DIR,<span class="hljs-string">"/"</span>,<span class="hljs-string">"HEARTY_window_heterozygosity_density.png"</span>), P, width = <span class="hljs-number">14</span>, height = <span class="hljs-number">8</span>)
+
+<span class="hljs-comment"># Create alpha values</span>
+alpha_grid &lt;- c(<span class="hljs-number">0.10</span>, <span class="hljs-number">0.20</span>, <span class="hljs-number">0.30</span>, <span class="hljs-number">0.50</span>)
+
+Adaptive &lt;- S[, .(alpha = alpha_grid),
+              by = .(file, file_id, sampleID, hetTsh, site_set, median_het)]
+
+Adaptive[, roh_threshold := median_het * alpha]
+Adaptive[, threshold_type := paste0(<span class="hljs-string">"file_median_x"</span>, alpha)]
+
+fwrite(Adaptive, paste0(DIR,<span class="hljs-string">"/"</span>,<span class="hljs-string">"HEARTY_adaptive_roh_thresholds_by_file.tsv"</span>), sep = <span class="hljs-string">"\t"</span>)
+
+Adaptive[order(site_set, hetTsh, sampleID, alpha)]
+
+Pooled &lt;- W[, .(
+  pooled_mean_het = mean(prop, na.rm = <span class="hljs-literal">TRUE</span>),
+  pooled_median_het = median(prop, na.rm = <span class="hljs-literal">TRUE</span>),
+  pooled_q01 = quantile(prop, <span class="hljs-number">0.01</span>, na.rm = <span class="hljs-literal">TRUE</span>),
+  pooled_q05 = quantile(prop, <span class="hljs-number">0.05</span>, na.rm = <span class="hljs-literal">TRUE</span>),
+  pooled_q10 = quantile(prop, <span class="hljs-number">0.10</span>, na.rm = <span class="hljs-literal">TRUE</span>)
+), by = .(hetTsh, site_set)]
+
+Pooled_alpha &lt;- Pooled[, .(alpha = alpha_grid),
+                       by = .(hetTsh, site_set, pooled_median_het)]
+
+Pooled_alpha[, roh_threshold := pooled_median_het * alpha]
+Pooled_alpha[, threshold_type := paste0(<span class="hljs-string">"pooled_median_x"</span>, alpha)]
+
+fwrite(Pooled_alpha, paste0(DIR,<span class="hljs-string">"/"</span>,<span class="hljs-string">"HEARTY_pooled_roh_thresholds_by_class.tsv"</span>), sep = <span class="hljs-string">"\t"</span>)
+
+Pooled_alpha[order(site_set, hetTsh, alpha)]
+names(Pooled_alpha)
+
+
+ROH_Plot_Tool &lt;- <span class="hljs-string">"/projects/erode/people/qhk515/software/HEARTY/ROH_Plot_Tool.R"</span>
+
+
+<span class="hljs-comment"># Check available values</span>
+sort(unique(Pooled_alpha$hetTsh))
+sort(unique(Pooled_alpha$alpha))
+
+<span class="hljs-comment"># Choose which HEARTY heterozygosity thresholds to include</span>
+use_het &lt;- c(<span class="hljs-number">0.15</span>, <span class="hljs-number">0.20</span>, <span class="hljs-number">0.25</span>, <span class="hljs-number">0.30</span>)
+
+<span class="hljs-comment"># Choose which ROH-threshold multipliers to include</span>
+use_alpha &lt;- c(<span class="hljs-number">0.20</span>, <span class="hljs-number">0.30</span>, <span class="hljs-number">0.50</span>)
+
+<span class="hljs-comment"># Filter pooled threshold table</span>
+thresholds_to_use &lt;- Pooled_alpha[
+  hetTsh %<span class="hljs-keyword">in</span>% use_het &amp; alpha %<span class="hljs-keyword">in</span>% use_alpha
+]
+
+thresholds_to_use
+
+file_info &lt;- unique(S[, .(file, file_id, sampleID, hetTsh, site_set)])
+
+Jobs &lt;- merge(
+  file_info,
+  thresholds_to_use,
+  by = c(<span class="hljs-string">"hetTsh"</span>, <span class="hljs-string">"site_set"</span>),
+  allow.cartesian = <span class="hljs-literal">TRUE</span>
+)
+
+Jobs[, out_prefix := paste0(
+  <span class="hljs-string">"roh_sensitivity/"</span>,
+  file_id,
+  <span class="hljs-string">"_"</span>,
+  threshold_type,
+  <span class="hljs-string">"_roh"</span>,
+  signif(roh_threshold, <span class="hljs-number">3</span>)
+)]
+
+Jobs[, pdf := paste0(out_prefix, <span class="hljs-string">".pdf"</span>)]
+Jobs[, summary := paste0(out_prefix, <span class="hljs-string">"_summary.txt"</span>)]
+
+Jobs[, cmd := sprintf(
+  paste(
+    <span class="hljs-string">'Rscript "%s"'</span>,
+    <span class="hljs-string">'--mode single'</span>,
+    <span class="hljs-string">'--input "%s"'</span>,
+    <span class="hljs-string">'--output-pdf "%s"'</span>,
+    <span class="hljs-string">'--min-length-mb 10'</span>,
+    <span class="hljs-string">'--max-scaffolds 40'</span>,
+    <span class="hljs-string">'--fill-cap auto'</span>,
+    <span class="hljs-string">'--fill-cap-scale 0.8'</span>,
+    <span class="hljs-string">'--bin-size-bp 500000'</span>,
+    <span class="hljs-string">'--fallback-resolution 100'</span>,
+    <span class="hljs-string">'--roh-threshold %.8g'</span>,
+    <span class="hljs-string">'2&gt;&amp;1 | tee "%s"'</span>
+  ),
+  ROH_Plot_Tool,
+  file,
+  pdf,
+  roh_threshold,
+  summary
+)]
+
+writeLines(
+  c(<span class="hljs-string">"#!/bin/bash"</span>, <span class="hljs-string">"mkdir -p roh_sensitivity"</span>, Jobs$cmd),
+  <span class="hljs-string">"run_roh_sensitivity.sh"</span>
+)
+
+fwrite(Jobs, paste0(DIR,<span class="hljs-string">"/"</span>,<span class="hljs-string">"ROH_sensitivity_jobs.tsv"</span>), sep = <span class="hljs-string">"\t"</span>)
+q()
+</div></code></pre>
+</details>
+<h3 id="3b-run-roh-script">3B. Run ROH script</h3>
+<p>Now you can submit this script in a screen session: <code>bash run_roh_sensitivity.sh</code></p>
+<details>
+<summary> Optional: exploratory fixed-threshold ROH run </summary>
+<pre class="hljs"><code><div><span class="hljs-comment"># ROH PLOTS</span>
+module purge
+module load miniconda
+conda activate r_env
+
+ROH_Plot_Tool=<span class="hljs-string">"/projects/erode/people/qhk515/software/HEARTY/ROH_Plot_Tool.R"</span>
+
+DIR=<span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH/"</span>
+<span class="hljs-built_in">cd</span> <span class="hljs-variable">$DIR</span>
+
+<span class="hljs-keyword">for</span> FILE <span class="hljs-keyword">in</span> <span class="hljs-variable">${DIR}</span>/O-76339-001*window*gz; <span class="hljs-keyword">do</span>
+    <span class="hljs-keyword">for</span> THR <span class="hljs-keyword">in</span> 0.0001 0.0005 0.001; <span class="hljs-keyword">do</span>
+
+
+    OUT=$(basename <span class="hljs-variable">${FILE}</span> .txt.gz)
+    PDF=<span class="hljs-string">"<span class="hljs-variable">${OUT}</span>_roh_<span class="hljs-variable">${THR}</span>.pdf"</span>
+    SUMMARY=<span class="hljs-string">"<span class="hljs-variable">${OUT}</span>_roh_<span class="hljs-variable">${THR}</span>_summary.txt"</span>
+
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"Running:"</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"Input:   <span class="hljs-variable">${FILE}</span>"</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"PDF:     <span class="hljs-variable">${PDF}</span>"</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"Summary: <span class="hljs-variable">${SUMMARY}</span>"</span>
+
+    Rscript <span class="hljs-string">"<span class="hljs-variable">${ROH_Plot_Tool}</span>"</span> \
+      --mode single \
+      --input <span class="hljs-string">"<span class="hljs-variable">${FILE}</span>"</span> \
+      --output-pdf <span class="hljs-string">"<span class="hljs-variable">${PDF}</span>"</span> \
+      --min-length-mb 10   \
+      --max-scaffolds 40 \
+      --fill-cap auto --fill-cap-scale 0.8 \
+      --bin-size-bp 500000 \
+      --fallback-resolution 100 \
+      --roh-threshold <span class="hljs-string">"<span class="hljs-variable">${THR}</span>"</span> 2&gt;&amp;1 | tee <span class="hljs-string">"<span class="hljs-variable">${SUMMARY}</span>"</span>
+      
+  <span class="hljs-keyword">done</span>
+<span class="hljs-keyword">done</span>
+</div></code></pre>
+</details>
+<h3 id="3c-summarise-roh-outputs">3C. Summarise ROH outputs</h3>
+<details> 
+<summary> Summary script </summary>
+Next,  we run a script that parses out all the ROH summary files into one big file:
+<pre class="hljs"><code><div><span class="hljs-meta">#!/bin/bash
+</span>
+DIR=<span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH/roh_sensitivity"</span>
+<span class="hljs-built_in">cd</span> <span class="hljs-variable">$DIR</span>
+
+OUT=<span class="hljs-string">"ROH_summary_all.tsv"</span>
+
+<span class="hljs-built_in">echo</span> -e <span class="hljs-string">"file\tsample\tthreshold\tmean_het_all\tmedian_het_all\trows_plotted\tmean_het_plotted\tmedian_het_plotted\traw_roh_bins\tbridged_roh_bins\tgenome_size_bp\tn_windows\twindow_size_bp\tFROH_raw_100kb\tROH_bp_raw_100kb\tFROH_raw_1Mb\tROH_bp_raw_1Mb\tFROH_raw_5Mb\tROH_bp_raw_5Mb\tFROH_bridged_100kb\tROH_bp_bridged_100kb\tFROH_bridged_1Mb\tROH_bp_bridged_1Mb\tFROH_bridged_5Mb\tROH_bp_bridged_5Mb"</span> &gt; <span class="hljs-string">"<span class="hljs-variable">${OUT}</span>"</span>
+
+<span class="hljs-keyword">for</span> f <span class="hljs-keyword">in</span> *_summary.txt; <span class="hljs-keyword">do</span>
+
+  awk -v file=<span class="hljs-string">"<span class="hljs-variable">$f</span>"</span> <span class="hljs-string">'
+  BEGIN {
+    mean_all="NA"; median_all="NA";
+    rows_plotted="NA"; mean_plotted="NA"; median_plotted="NA";
+    raw_bins="NA"; bridged_bins="NA";
+    genome_bp="NA"; n_windows="NA"; window_bp="NA";
+
+    froh_raw_100="NA"; rohbp_raw_100="NA";
+    froh_raw_1="NA"; rohbp_raw_1="NA";
+    froh_raw_5="NA"; rohbp_raw_5="NA";
+
+    froh_bridged_100="NA"; rohbp_bridged_100="NA";
+    froh_bridged_1="NA"; rohbp_bridged_1="NA";
+    froh_bridged_5="NA"; rohbp_bridged_5="NA";
+
+    section="";
+  }
+
+  /^Mean heterozygosity \(all parsed windows\):/ {
+    mean_all=$NF
+  }
+
+  /^Median heterozygosity \(all parsed windows\):/ {
+    median_all=$NF
+  }
+
+  /^Rows used for plotted scaffolds:/ {
+    rows_plotted=$NF
+  }
+
+  /^Mean heterozygosity \(plotted scaffolds\):/ {
+    mean_plotted=$NF
+  }
+
+  /^Median heterozygosity \(plotted scaffolds\):/ {
+    median_plotted=$NF
+  }
+
+  /^Raw ROH bins flagged:/ {
+    raw_bins=$NF
+  }
+
+  /^Bridged ROH bins flagged:/ {
+    bridged_bins=$NF
+  }
+
+  /^Genome size used for FROH:/ {
+    genome_bp=$6
+
+    tmp=$0
+    sub(/^.*n_windows=/, "", tmp)
+    sub(/ .*/, "", tmp)
+    n_windows=tmp
+
+    tmp2=$0
+    sub(/^.*x /, "", tmp2)
+    sub(/ bp.*$/, "", tmp2)
+    window_bp=tmp2
+  }
+
+  /^FROH \(unbridged\/raw/ {
+    section="raw"
+  }
+
+  /^FROH \(bridged/ {
+    section="bridged"
+  }
+
+  /^[[:space:]]*&gt;100kb:/ {
+    val=$2
+    bp=$3
+    gsub(/\(ROH/, "", bp)
+    gsub(/bp=/, "", bp)
+    gsub(/\)/, "", bp)
+
+    if (section=="raw") {
+      froh_raw_100=val
+      rohbp_raw_100=bp
+    } else if (section=="bridged") {
+      froh_bridged_100=val
+      rohbp_bridged_100=bp
+    }
+  }
+
+  /^[[:space:]]*&gt;1Mb:/ {
+    val=$2
+    bp=$3
+    gsub(/\(ROH/, "", bp)
+    gsub(/bp=/, "", bp)
+    gsub(/\)/, "", bp)
+
+    if (section=="raw") {
+      froh_raw_1=val
+      rohbp_raw_1=bp
+    } else if (section=="bridged") {
+      froh_bridged_1=val
+      rohbp_bridged_1=bp
+    }
+  }
+
+  /^[[:space:]]*&gt;5Mb:/ {
+    val=$2
+    bp=$3
+    gsub(/\(ROH/, "", bp)
+    gsub(/bp=/, "", bp)
+    gsub(/\)/, "", bp)
+
+    if (section=="raw") {
+      froh_raw_5=val
+      rohbp_raw_5=bp
+    } else if (section=="bridged") {
+      froh_bridged_5=val
+      rohbp_bridged_5=bp
+    }
+  }
+
+  END {
+    base=file
+    sub(/^.*\//, "", base)
+    sub(/_summary\.txt$/, "", base)
+
+    sample=base
+    threshold="NA"
+
+      if (base ~ /_roh[^_]+$/) {
+
+        threshold = base
+        sub(/^.*_roh/, "", threshold)
+
+        sample = base
+        sub(/_roh[^_]+$/, "", sample)
+      }
+
+    print file "\t" sample "\t" threshold "\t" \
+          mean_all "\t" median_all "\t" rows_plotted "\t" \
+          mean_plotted "\t" median_plotted "\t" \
+          raw_bins "\t" bridged_bins "\t" \
+          genome_bp "\t" n_windows "\t" window_bp "\t" \
+          froh_raw_100 "\t" rohbp_raw_100 "\t" \
+          froh_raw_1 "\t" rohbp_raw_1 "\t" \
+          froh_raw_5 "\t" rohbp_raw_5 "\t" \
+          froh_bridged_100 "\t" rohbp_bridged_100 "\t" \
+          froh_bridged_1 "\t" rohbp_bridged_1 "\t" \
+          froh_bridged_5 "\t" rohbp_bridged_5
+  }
+  '</span> <span class="hljs-string">"<span class="hljs-variable">$f</span>"</span> &gt;&gt; <span class="hljs-string">"<span class="hljs-variable">${OUT}</span>"</span>
+
+<span class="hljs-keyword">done</span>
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Wrote: <span class="hljs-variable">${OUT}</span>"</span>
+
+</div></code></pre>
+</details>
+<h3 id="3d-create-plots">3D. Create plots</h3>
+<p>Use this summary file to create plots for ROH and het. We can create this using R on the HPC or locally.</p>
+<details>
+<summary> R script - ROH plots </summary> 
+<pre class="hljs"><code><div><span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># Plot HEARTY ROH sensitivity summaries</span>
+<span class="hljs-comment"># Input: ROH_summary_all.tsv</span>
+<span class="hljs-comment"># ============================================================</span>
+
+<span class="hljs-keyword">library</span>(data.table)
+<span class="hljs-keyword">library</span>(stringr)
+<span class="hljs-keyword">library</span>(ggplot2)
+<span class="hljs-keyword">library</span>(tidyr)
+<span class="hljs-keyword">library</span>(dplyr)
+<span class="hljs-keyword">library</span>(httpgd)
+
+<span class="hljs-comment"># If you want to see plots live:</span>
+<span class="hljs-comment"># hgd()</span>
+<span class="hljs-comment"># ----------------------------</span>
+<span class="hljs-comment"># 1. Paths</span>
+<span class="hljs-comment"># ----------------------------</span>
+
+DIR &lt;- <span class="hljs-string">"/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH/roh_sensitivity"</span>
+
+<span class="hljs-comment">#DIR &lt;- "~/Library/CloudStorage/OneDrive-UniversityofKent/PhD stuff/PhD research/Research projects/01_OBP/Analyses/Het/HEARTY/roh"</span>
+
+INFILE &lt;- file.path(DIR, <span class="hljs-string">"ROH_summary_all.tsv"</span>)
+PLOT_DIR &lt;- file.path(DIR, <span class="hljs-string">"plots_ROH_summary"</span>)
+
+dir.create(PLOT_DIR, showWarnings = <span class="hljs-literal">FALSE</span>, recursive = <span class="hljs-literal">TRUE</span>)
+
+<span class="hljs-comment"># ----------------------------</span>
+<span class="hljs-comment"># 2. Read summary file</span>
+<span class="hljs-comment"># ----------------------------</span>
+
+ROH &lt;- fread(INFILE, na.strings = c(<span class="hljs-string">"NA"</span>, <span class="hljs-string">""</span>, <span class="hljs-string">"NaN"</span>))
+
+<span class="hljs-comment"># Convert numeric columns</span>
+num_cols &lt;- setdiff(names(ROH), c(<span class="hljs-string">"file"</span>, <span class="hljs-string">"sample"</span>))
+
+ROH[, (num_cols) := lapply(.SD, as.numeric), .SDcols = num_cols]
+
+<span class="hljs-comment"># ----------------------------</span>
+<span class="hljs-comment"># 3. Parse sample / thresholds</span>
+<span class="hljs-comment"># ----------------------------</span>
+
+ROH[, sample_base := sample]
+
+
+<span class="hljs-comment"># Sample ID = everything before ".allscaf1_het"</span>
+ROH[, sampleID := str_match(sample_base, <span class="hljs-string">"^(.+?)\\.allscaf1_het"</span>)[, <span class="hljs-number">2</span>]]
+
+<span class="hljs-comment"># HEARTY heterozygote threshold</span>
+ROH[, hetTsh := as.numeric(str_match(sample_base, <span class="hljs-string">"_het([0-9.]+)\\.mincov"</span>)[, <span class="hljs-number">2</span>])]
+
+<span class="hljs-comment"># Site set: transversions-only or all sites</span>
+ROH[, site_set := fifelse(str_detect(sample_base, <span class="hljs-string">"_trv|\\.trv|trv"</span>), <span class="hljs-string">"trv"</span>, <span class="hljs-string">"all"</span>)]
+
+<span class="hljs-comment"># ROH threshold multiplier alpha</span>
+ROH[, alpha := as.numeric(str_match(sample_base, <span class="hljs-string">"pooled_median_x([0-9.]+)"</span>)[, <span class="hljs-number">2</span>])]
+
+<span class="hljs-comment"># Fallback: if alpha is not in sample name, infer from threshold / median_het_all</span>
+ROH[is.na(alpha) &amp; !is.na(threshold) &amp; !is.na(median_het_all),
+    alpha := threshold / median_het_all]
+
+<span class="hljs-comment"># Make labels cleaner</span>
+ROH[, hetTsh_f := factor(hetTsh, levels = sort(unique(hetTsh)))]
+ROH[, alpha_f := factor(alpha, levels = sort(unique(alpha)))]
+
+<span class="hljs-comment"># Check parsing</span>
+print(ROH[, .N, by = .(sampleID, hetTsh, site_set, alpha)][order(sampleID, site_set, hetTsh, alpha)])
+
+
+<span class="hljs-comment"># Samples I am interested in</span>
+coverage_df &lt;- tribble(
+  ~sample, ~MeanCoverage,
+  <span class="hljs-string">"O-76339-001"</span>, <span class="hljs-number">7.18</span>,
+  <span class="hljs-string">"O-76349-001"</span>, <span class="hljs-number">7.43</span>,
+  <span class="hljs-string">"O-76350-001"</span>, <span class="hljs-number">6.95</span>,
+  <span class="hljs-string">"O-76521-001"</span>, <span class="hljs-number">7.04</span>,
+  <span class="hljs-string">"O-76523-001"</span>, <span class="hljs-number">7.08</span>,
+  <span class="hljs-string">"O-76526-001"</span>, <span class="hljs-number">7.07</span>,
+  <span class="hljs-string">"O-76538-001"</span>, <span class="hljs-number">7.07</span>,
+  <span class="hljs-string">"O-81171-001"</span>, <span class="hljs-number">7.10</span>,
+  <span class="hljs-string">"O-81175-001"</span>, <span class="hljs-number">7.09</span>,
+  <span class="hljs-string">"O-81179-001"</span>, <span class="hljs-number">7.26</span>,
+  <span class="hljs-string">"O-81182-001"</span>, <span class="hljs-number">6.97</span>,
+  <span class="hljs-string">"O-81186-001"</span>, <span class="hljs-number">6.84</span>,
+  <span class="hljs-string">"O-81188-001"</span>, <span class="hljs-number">7.01</span>,
+  <span class="hljs-string">"O-81192-001"</span>, <span class="hljs-number">7.16</span>,
+  <span class="hljs-string">"O-81193-001"</span>, <span class="hljs-number">7.10</span>,
+  <span class="hljs-string">"O-81196-001"</span>, <span class="hljs-number">6.95</span>,
+  <span class="hljs-string">"O-81198-001"</span>, <span class="hljs-number">6.08</span>,
+  <span class="hljs-string">"O-81201-001"</span>, <span class="hljs-number">7.01</span>,
+  <span class="hljs-string">"O-81203-001"</span>, <span class="hljs-number">6.93</span>,
+  <span class="hljs-string">"OBPI_501"</span>, <span class="hljs-number">24.06</span>,
+  <span class="hljs-string">"OBPI_502"</span>, <span class="hljs-number">9.97</span>,
+  <span class="hljs-string">"OBPI_503"</span>, <span class="hljs-number">7.24</span>,
+  <span class="hljs-string">"OBPI_504"</span>, <span class="hljs-number">17.67</span>,
+  <span class="hljs-string">"OBPI_505"</span>, <span class="hljs-number">2.42</span>,
+  <span class="hljs-string">"OBPI_506"</span>, <span class="hljs-number">4.86</span>,
+  <span class="hljs-string">"OBPI_507"</span>, <span class="hljs-number">5.77</span>,
+  <span class="hljs-string">"OBPI_508"</span>, <span class="hljs-number">3.91</span>,
+  <span class="hljs-string">"OBPII_ReHoI_501"</span>, <span class="hljs-number">5.10</span>,
+  <span class="hljs-string">"OBPII_ReHoI_502"</span>, <span class="hljs-number">6.71</span>,
+  <span class="hljs-string">"OBPII_ReHoI_503"</span>, <span class="hljs-number">3.94</span>,
+  <span class="hljs-string">"OBPII_ReHoI_504"</span>, <span class="hljs-number">7.60</span>,
+  <span class="hljs-string">"OBPII_ReHoI_505"</span>, <span class="hljs-number">2.64</span>,
+  <span class="hljs-string">"OBPII_ReHoI_506"</span>, <span class="hljs-number">4.03</span>,
+  <span class="hljs-string">"OBPII_ReHoI_507"</span>, <span class="hljs-number">9.06</span>,
+  <span class="hljs-string">"OBPII_ReHoI_508"</span>, <span class="hljs-number">10.24</span>
+) %&gt;%
+  mutate(
+    Group = if_else(str_starts(sample, <span class="hljs-string">"O-"</span>),
+                    <span class="hljs-string">"Modern"</span>,
+                    <span class="hljs-string">"Historical"</span>)
+  )
+
+<span class="hljs-comment"># Join dataframes</span>
+ROH &lt;- ROH %&gt;%
+  left_join(
+    coverage_df,
+    by = c(<span class="hljs-string">"sampleID"</span> = <span class="hljs-string">"sample"</span>)
+  )
+
+<span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># 4. PLOT 1: Mean heterozygosity across HEARTY thresholds</span>
+<span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># Create fixed colour mapping</span>
+sample_cols &lt;- setNames(
+  scales::hue_pal()(length(unique(het_summary$sampleID))),
+  sort(unique(het_summary$sampleID))
+)
+
+het_summary &lt;- unique(
+  ROH[, .(
+    sampleID,
+    hetTsh,
+    hetTsh_f,
+    site_set,
+    mean_het_all,
+    MeanCoverage,
+    Group
+  )]
+)
+
+
+p_het &lt;- ggplot(
+  het_summary %&gt;% filter(Group == <span class="hljs-string">"Historical"</span>),
+  aes(x = hetTsh, y = mean_het_all, colour = sampleID, group = sampleID, linetype = Group)
+) +
+  geom_point(size = <span class="hljs-number">2.5</span>) +
+  geom_line(linewidth = <span class="hljs-number">0.8</span>) +
+  facet_wrap(~ site_set, scales = <span class="hljs-string">"free_y"</span>) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"Mean heterozygosity across HEARTY thresholds - ONLY HISTORICAL"</span>,
+    x = <span class="hljs-string">"HEARTY heterozygote threshold"</span>,
+    y = <span class="hljs-string">"Mean window heterozygosity"</span>,
+    colour = <span class="hljs-string">"sampleID"</span>
+  ) +
+  theme(
+    strip.text = element_text(size = <span class="hljs-number">6</span>),  
+    axis.text.x = element_text(angle = <span class="hljs-number">45</span>, hjust = <span class="hljs-number">1</span>),
+    <span class="hljs-comment"># Smaller text</span>
+    legend.text = element_text(size = <span class="hljs-number">8</span>),
+    legend.title = element_text(size = <span class="hljs-number">9</span>),
+    
+  )
+
+print(p_het)
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"01_mean_heterozygosity_by_hetTsh_historical.png"</span>),
+  p_het,
+  width = <span class="hljs-number">14</span>,
+  height = <span class="hljs-number">7</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+ <span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># 5. PLOT 2: Sensitivity of FROH raw &gt;1Mb</span>
+<span class="hljs-comment"># ============================================================</span>
+
+p_raw_1Mb &lt;- ggplot(
+  ROH,
+  aes(x = alpha, y = FROH_raw_1Mb, colour = sampleID, group = sampleID, linetype = Group)
+) +
+  geom_point(size = <span class="hljs-number">2.2</span>) +
+  geom_line(linewidth = <span class="hljs-number">0.7</span>) +
+  facet_grid(site_set + Group ~ hetTsh_f, scales = <span class="hljs-string">"fixed"</span>) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"Sensitivity of FROH &gt;1Mb to ROH threshold"</span>,
+    x = <span class="hljs-string">"ROH threshold multiplier: pooled median × alpha"</span>,
+    y = <span class="hljs-string">"FROH raw &gt;1Mb"</span>,
+    colour = <span class="hljs-string">"sampleID"</span>
+  )
+print(p_raw_1Mb)
+
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"02_FROH_raw_1Mb_sensitivity.png"</span>),
+  p_raw_1Mb,
+  width = <span class="hljs-number">14</span>,
+  height = <span class="hljs-number">8</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+<span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># 6. Sensitivity of FROH raw &gt;5Mb</span>
+<span class="hljs-comment"># ============================================================</span>
+p_raw_5Mb &lt;- ggplot(
+  ROH,
+  aes(x = alpha, y = FROH_raw_5Mb, colour = sampleID, group = sampleID, linetype = Group)
+) +
+  geom_point(size = <span class="hljs-number">2.2</span>) +
+  geom_line(linewidth = <span class="hljs-number">0.7</span>) +
+  facet_grid(site_set + Group ~ hetTsh_f, scales = <span class="hljs-string">"fixed"</span>) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"Sensitivity of FROH &gt;5Mb to ROH threshold"</span>,
+    x = <span class="hljs-string">"ROH threshold multiplier: pooled median × alpha"</span>,
+    y = <span class="hljs-string">"FROH raw &gt;5Mb"</span>,
+    colour = <span class="hljs-string">"sampleID"</span>
+  )
+print(p_raw_5Mb)
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"03_FROH_raw_5Mb_sensitivity.png"</span>),
+  p_raw_5Mb,
+  width = <span class="hljs-number">14</span>,
+  height = <span class="hljs-number">8</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+<span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># 7. Raw versus bridged FROH</span>
+<span class="hljs-comment"># ============================================================</span>
+
+ROH_long &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  select(
+    sampleID, hetTsh, hetTsh_f, site_set, alpha,
+    FROH_raw_1Mb, FROH_bridged_1Mb,
+    FROH_raw_5Mb, FROH_bridged_5Mb
+  ) %&gt;%
+  pivot_longer(
+    cols = starts_with(<span class="hljs-string">"FROH_"</span>),
+    names_to = c(<span class="hljs-string">"bridge"</span>, <span class="hljs-string">"length_class"</span>),
+    names_pattern = <span class="hljs-string">"FROH_(raw|bridged)_(1Mb|5Mb)"</span>,
+    values_to = <span class="hljs-string">"FROH"</span>
+  ) %&gt;%
+  mutate(
+    bridge = factor(bridge, levels = c(<span class="hljs-string">"bridged"</span>, <span class="hljs-string">"raw"</span>)),
+    length_class = factor(length_class, levels = c(<span class="hljs-string">"1Mb"</span>, <span class="hljs-string">"5Mb"</span>),
+                          labels = c(<span class="hljs-string">"&gt;1Mb"</span>, <span class="hljs-string">"&gt;5Mb"</span>))
+  )
+
+p_raw_bridged &lt;- ggplot(
+  ROH_long,
+  aes(
+    x = alpha,
+    y = FROH,
+    colour = sampleID,
+    group = interaction(sampleID, bridge),
+    linetype = bridge
+  )
+) +
+  geom_point(size = <span class="hljs-number">1.8</span>) +
+  geom_line(linewidth = <span class="hljs-number">0.7</span>) +
+  facet_grid(length_class + site_set ~ hetTsh_f) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"Raw versus bridged FROH"</span>,
+    x = <span class="hljs-string">"ROH threshold multiplier: pooled median × alpha"</span>,
+    y = <span class="hljs-string">"FROH"</span>,
+    colour = <span class="hljs-string">"sampleID"</span>,
+    linetype = <span class="hljs-string">"bridge"</span>
+  )
+print(p_raw_bridged)
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"04_FROH_raw_vs_bridged.png"</span>),
+  p_raw_bridged,
+  width = <span class="hljs-number">16</span>,
+  height = <span class="hljs-number">12</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+<span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># 8. All-sites versus transversions-only FROH raw &gt;1Mb</span>
+<span class="hljs-comment"># ============================================================</span>
+
+wide_1Mb &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  select(sampleID, hetTsh, hetTsh_f, alpha, alpha_f, site_set, FROH_raw_1Mb, MeanCoverage, Group) %&gt;%
+  pivot_wider(
+    names_from = site_set,
+    values_from = FROH_raw_1Mb
+  ) %&gt;%
+  filter(!is.na(all), !is.na(trv))
+
+p_all_trv_1Mb &lt;- ggplot(
+  wide_1Mb,
+  aes(x = all, y = trv, colour = sampleID)
+) +
+  geom_abline(slope = <span class="hljs-number">1</span>, intercept = <span class="hljs-number">0</span>, linetype = <span class="hljs-string">"dashed"</span>, colour = <span class="hljs-string">"black"</span>) +
+  geom_point(size = <span class="hljs-number">2.4</span>) +
+  facet_grid(alpha_f ~ hetTsh_f) +
+  scale_colour_manual(values = sample_cols) +
+  geom_text_repel(
+    aes(label = sampleID),
+    size = <span class="hljs-number">2.5</span>,
+    max.overlaps = <span class="hljs-number">15</span>,
+    show.legend = <span class="hljs-literal">FALSE</span>,
+    <span class="hljs-comment"># Push labels further away</span>
+    force = <span class="hljs-number">10</span>,
+    force_pull = <span class="hljs-number">0.5</span>,
+    <span class="hljs-comment"># More spacing</span>
+    box.padding = <span class="hljs-number">0.8</span>,
+    point.padding = <span class="hljs-number">0.8</span>,
+    <span class="hljs-comment"># Segment line</span>
+    segment.alpha = <span class="hljs-number">0.5</span>,
+    segment.size = <span class="hljs-number">0.3</span>
+  ) + 
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"All-sites versus transversions-only FROH"</span>,
+    x = <span class="hljs-string">"All-sites FROH raw &gt;1Mb"</span>,
+    y = <span class="hljs-string">"Transversions-only FROH raw &gt;1Mb"</span>,
+    colour = <span class="hljs-string">"sampleID"</span>
+  )
+print(p_all_trv_1Mb)
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"05_all_vs_trv_FROH_raw_1Mb.png"</span>),
+  p_all_trv_1Mb,
+  width = <span class="hljs-number">18</span>,
+  height = <span class="hljs-number">6</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+<span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># 9. All-sites versus transversions-only FROH raw &gt;5Mb</span>
+<span class="hljs-comment"># ============================================================</span>
+
+wide_5Mb &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  select(sampleID, hetTsh, hetTsh_f, alpha, alpha_f, site_set, FROH_raw_5Mb) %&gt;%
+  pivot_wider(
+    names_from = site_set,
+    values_from = FROH_raw_5Mb
+  ) %&gt;%
+  filter(!is.na(all), !is.na(trv))
+
+p_all_trv_5Mb &lt;- ggplot(
+  wide_5Mb,
+  aes(x = all, y = trv, colour = sampleID)
+) +
+  geom_abline(slope = <span class="hljs-number">1</span>, intercept = <span class="hljs-number">0</span>, linetype = <span class="hljs-string">"dashed"</span>, colour = <span class="hljs-string">"black"</span>) +
+  geom_point(size = <span class="hljs-number">2.4</span>) +
+  facet_grid(alpha_f ~ hetTsh_f) +
+  scale_colour_manual(values = sample_cols) +
+  geom_text_repel(
+    aes(label = sampleID),
+    size = <span class="hljs-number">2.5</span>,
+    max.overlaps = <span class="hljs-number">15</span>,
+    show.legend = <span class="hljs-literal">FALSE</span>,
+    <span class="hljs-comment"># Push labels further away</span>
+    force = <span class="hljs-number">10</span>,
+    force_pull = <span class="hljs-number">0.5</span>,
+    <span class="hljs-comment"># More spacing</span>
+    box.padding = <span class="hljs-number">0.8</span>,
+    point.padding = <span class="hljs-number">0.8</span>,
+    <span class="hljs-comment"># Segment line</span>
+    segment.alpha = <span class="hljs-number">0.5</span>,
+    segment.size = <span class="hljs-number">0.3</span>
+  ) + 
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"All-sites versus transversions-only long ROH"</span>,
+    x = <span class="hljs-string">"All-sites FROH raw &gt;5Mb"</span>,
+    y = <span class="hljs-string">"Transversions-only FROH raw &gt;5Mb"</span>,
+    colour = <span class="hljs-string">"sampleID"</span>
+  )
+print(p_all_trv_5Mb)
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"06_all_vs_trv_FROH_raw_5Mb.png"</span>),
+  p_all_trv_5Mb,
+  width = <span class="hljs-number">18</span>,
+  height = <span class="hljs-number">6</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+<span class="hljs-comment"># ============================================================</span>
+<span class="hljs-comment"># 10. Sensitivity range across ROH thresholds</span>
+<span class="hljs-comment"># ============================================================</span>
+
+range_df &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  group_by(sampleID, site_set, Group) %&gt;%
+  summarise(
+    min_FROH = min(FROH_raw_1Mb, na.rm = <span class="hljs-literal">TRUE</span>),
+    mean_FROH = mean(FROH_raw_1Mb, na.rm = <span class="hljs-literal">TRUE</span>),
+    max_FROH = max(FROH_raw_1Mb, na.rm = <span class="hljs-literal">TRUE</span>),
+    .groups = <span class="hljs-string">"drop"</span>
+  )
+
+sample_order &lt;- range_df %&gt;%
+  group_by(sampleID) %&gt;%
+  summarise(mean_order = mean(mean_FROH, na.rm = <span class="hljs-literal">TRUE</span>), .groups = <span class="hljs-string">"drop"</span>) %&gt;%
+  arrange(mean_order) %&gt;%
+  pull(sampleID)
+
+range_df &lt;- range_df %&gt;%
+  mutate(sampleID = factor(sampleID, levels = sample_order))
+
+p_range &lt;- ggplot(
+  range_df,
+  aes(y = sampleID, colour = site_set)
+) +
+  geom_segment(
+    aes(x = min_FROH, xend = max_FROH, yend = sampleID),
+    linewidth = <span class="hljs-number">0.8</span>
+  ) +
+  geom_point(aes(x = mean_FROH), size = <span class="hljs-number">3</span>) +
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"Sensitivity range across ROH thresholds"</span>,
+    x = <span class="hljs-string">"FROH raw &gt;1Mb, mean and range across settings"</span>,
+    y = <span class="hljs-string">"Sample"</span>,
+    colour = <span class="hljs-string">"site_set"</span>
+  )
+print(p_range)
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"07_FROH_sensitivity_range_by_sample.png"</span>),
+  p_range,
+  width = <span class="hljs-number">12</span>,
+  height = <span class="hljs-number">8</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+
+
+
+<span class="hljs-comment"># PLOT 1: COV VS HET BY THRESHOLD</span>
+p_cov_het &lt;- ggplot(
+  het_summary,
+  aes(x = MeanCoverage, y = mean_het_all, colour = Group)
+) +
+  geom_point(size = <span class="hljs-number">2.5</span>, alpha = <span class="hljs-number">0.8</span>) +
+  geom_smooth(method = <span class="hljs-string">"lm"</span>, se = <span class="hljs-literal">FALSE</span>) +
+  facet_grid(site_set ~ hetTsh_f, scales = <span class="hljs-string">"free_y"</span>) +
+  theme_bw() +
+  labs(
+    title = <span class="hljs-string">"Effect of coverage on mean window heterozygosity"</span>,
+    x = <span class="hljs-string">"Mean coverage"</span>,
+    y = <span class="hljs-string">"Mean window heterozygosity"</span>,
+    colour = <span class="hljs-string">"Group"</span>
+  )
+
+print(p_cov_het)
+
+ggsave(
+  file.path(PLOT_DIR, <span class="hljs-string">"08_coverage_vs_mean_heterozygosity.png"</span>),
+  p_cov_het,
+  width = <span class="hljs-number">14</span>,
+  height = <span class="hljs-number">8</span>,
+  dpi = <span class="hljs-number">300</span>
+)
+
+
+
+<span class="hljs-comment"># ----------------------------</span>
+<span class="hljs-comment"># 11. Save parsed table</span>
+<span class="hljs-comment"># ----------------------------</span>
+
+fwrite(
+  ROH,
+  file.path(PLOT_DIR, <span class="hljs-string">"ROH_summary_all_parsed_for_plotting.tsv"</span>),
+  sep = <span class="hljs-string">"\t"</span>
+)
+
+message(<span class="hljs-string">"Done. Plots written to: "</span>, PLOT_DIR)
+
+</div></code></pre>
+
+</body>
+</html>

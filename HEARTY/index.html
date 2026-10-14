@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>HEARTY</title>
+	<style>
+		/* Basic styles for readability */
+		body {
+			font-family: sans-serif;
+			max-width: 800px;
+			margin: 2em auto;
+			padding: 0 1em;
+			line-height: 1.6;
+		}
+		img { max-width: 100%; height: auto; }
+		pre { background-color: #f4f4f4; padding: 1em; overflow-x: auto; }
+		code { font-family: monospace; }
+	</style>
+</head>
+<body>
+	<h1>HEARTY OBP scaffold_1 QC workflow</h1>
+<p>See github for HEARTY: <a href="https://github.com/BiodiversityExtinction/HEARTY/tree/main">https://github.com/BiodiversityExtinction/HEARTY/tree/main</a></p>
+<p><em><strong>Goal of HEARTY:</strong></em> <em>evaluate how sensitive heterozygosity and ROH inference are to different allele balance thresholds, particularly in low-coverage and historical samples.</em></p>
+<p>This workflow runs HEARTY on OBP BAM files to examine:</p>
+<ul>
+<li>minor allele balance distributions</li>
+<li>transition/transversion patterns</li>
+<li>window heterozygosity</li>
+<li>ROH sensitivity across different heterozygote thresholds.</li>
+</ul>
+<br/>
+<h2>Why HEARTY is useful</h2>
+<h3>Problem</h3>
+<p>With low coveraege and historical data we are dealing with two conflicting issues: 1. Overestimation of het sites due to low coverage 2. Underdetection of het sites because of reference bias</p>
+<h3>1. Overestimation of heterozygous sites due to sequencing errors and damage</h3>
+<p>Low-coverage and historical genomic data can contain elevated levels of:</p>
+<ul>
+<li>sequencing error</li>
+<li>ancient DNA damage</li>
+<li>contamination</li>
+</ul>
+<p>These issues can produce low-frequency alternate reads that may appear heterozygous even though they might be artefacts.</p>
+<p>Therefore distinguishing true alternate alleles is tricky. If we have 20% of reads in a site that support the minor allele, could this be a true heterzygoste or a an error?</p>
+<blockquote>
+<p>Example high coverage site:
+Major allele count = 17
+Minor allele count = 4
+AB = 4 / 20 = 0.20</p>
+</blockquote>
+<p>This becomes especially important in low-coverage data, where very small differences in read counts can strongly affect heterozygote inference:</p>
+<blockquote>
+<p>Example low coverage site:
+Major allele count = 5
+Minor allele count = 1
+AB = 1 / 5 = 0.20</p>
+</blockquote>
+<p>This issue is particularly relevant when using genotype likelihood frameworks like ANGSD, where low-frequency minor reads  contribute probabilistically to heterozygote likelihoods (see low coverage example above). Under low-coverage conditions, this uncertainty can sometimes inflate heterozygosity estimates relative to stricter genotype-calling approaches.
+In contrast, traditional genotype callers generally apply stricter genotype assignment thresholds, which can reduce false-positive heterozygous calls but may also miss true variation in low-coverage samples.</p>
+<h3>2. Underdetection of heterozygous sites due to reference bias and low coverage uncertainty</h3>
+<p>Historical samples may also experience stronger reference bias because reads can be more diverged from the (often) modern reference genome.
+This can lead to:</p>
+<ul>
+<li>reduced mapping of alternate alleles</li>
+<li>preferential alignment of reference-supporting reads</li>
+<li>excess homozygous reference calls</li>
+</ul>
+<p>As a result, true heterozygous sites may be missed, leading to underestimation of heterozygosity and genetic diversity.</p>
+<h3>Consequence</h3>
+<p>Strict thresholds might remove true biological variation but lenient thresholds might lead to false positives.</p>
+<h3>How HEARTY is helpful</h3>
+<p>HEARTY is useful because i allows these competing effects to be explored systematically across multiple allele balance thresholds and filtering schemes.</p>
+<br>
+<h2>Main question HEARTY addresses</h2>
+<p><em><strong>“How much do heterozygosity and ROH results change depending on how strict I am about calling heterozygous sites and defining ROHs?”</strong></em></p>
+<p>A key robustness test is:
+<em><strong>“Do the biological conclusions remain consistent under different or stricter thresholds?”</strong></em></p>
+<h2>Main goal of HEARTY</h2>
+<p>The main purpose of HEARTY is to determine biologically reasonable minor allele balance thresholds for a dataset by systematically comparing:</p>
+<ul>
+<li>heterozygosity estimates</li>
+<li>transition/transversion patterns</li>
+<li>window heterozygosity</li>
+<li>ROH inference</li>
+</ul>
+<p>across multiple filtering thresholds.</p>
+<p>Rather than assuming a single threshold is correct, HEARTY allows sensitivity analyses to determine whether conclusions are robust to parameter choice.</p>
+<h2>Main vairables that HEARTY examines</h2>
+<ol>
+<li>Minor AB threshold: 0.15, 0.20, 0.35…</li>
+<li>Site set: Transitions+Transversion, Transversions only</li>
+<li>Alpha: 0.2, 0.3, 0.5</li>
+</ol>
+<h2>Metrics</h2>
+<ul>
+<li>mean heterozygosity</li>
+<li>raw FROH</li>
+<li>bridged FROH</li>
+<li>FROH &gt;1 Mb</li>
+<li>FROH &gt;5 Mb</li>
+<li></li>
+</ul>
+<h2>Inputs and requierements</h2>
+<ul>
+<li>BAM list: one BAM per line</li>
+<li>reference genome</li>
+<li>HEARTY scripts</li>
+<li>ANGSD</li>
+<li>R and Python environments (check HEARTY repo)</li>
+</ul>
+<h2>Workflow</h2>
+<ol>
+<li>Run HEARTY
+↓</li>
+<li>Plot minor allele balance / frequency outputs
+↓</li>
+<li>Parse HEARTY het window files and calculate pooled thresholds
+↓</li>
+<li>Generate run_roh_sensitivity.sh
+↓</li>
+<li>Submit/run run_roh_sensitivity.sh
+↓</li>
+<li>Summarise ROH sensitivity outputs into ROH_summary_all.tsv
+↓</li>
+<li>Plot ROH/FROH sensitivity from ROH_summary_all.tsv</li>
+</ol>
+<h2>Parameters I used for this workflow (ADJUST IF NEEDED)</h2>
+<ul>
+<li>minimum depth: 4</li>
+<li>maximum depth: 50</li>
+<li>HEARTY minor allele balance thresholds: 0.15, 0.20, 0.25, 0.30</li>
+<li>region: scaffold_1</li>
+<li>ROH thresholds: 0.0001, 0.0005, 0.001</li>
+</ul>
+<br>
+<h2>1. Running HEARTY python script</h2>
+<p>First we need to actually run the HEARTY python script with the parameters we have set earlier.</p>
+<details> 
+<summary> HEARTY.py wrapper </summary>
+This is the script I used:
+<pre><code class="language-bash">#!/bin/bash
+#SBATCH --job-name=HEARTY_scaf1
+#SBATCH --time=03:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --qos=normal
+#SBATCH --partition=cpuqueue
+#SBATCH --array=1-35%10
+#SBATCH --output=jobs/%x_%A_%a.out
+#SBATCH --error=jobs/%x_%A_%a.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=amb230@kent.ac.uk
+ 
+# Script to run HEARTY to test allele balances per sample
+
+
+module purge
+module load perl/5.38.0 gsl/2.5 bcftools/1.21 python
+
+DIR=&quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY&quot;
+cd $DIR
+
+BAM_LIST_COMBINED=&quot;/projects/erode/people/qhk515/01_OBP/scripts/OBPs/list_OBPs_combined.txt&quot;
+REF=&quot;/projects/erode/people/qhk515/reference_genomes/OBP/bNeochry1.pri.20230906.fa&quot;
+#LUKE_LIST_SCAF1=&quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/tests_scaf1/scaf1_callable_sites.txt.tab&quot;
+
+# Get sample name from BAM list based on SLURM_ARRAY_TASK_ID
+BAM=$(sed -n &quot;${SLURM_ARRAY_TASK_ID}p&quot; ${BAM_LIST_COMBINED})
+if [ -z &quot;${BAM}&quot; ]; then
+    echo &quot;No BAM file found for SLURM_ARRAY_TASK_ID ${SLURM_ARRAY_TASK_ID}&quot;
+    exit 1
+fi
+
+SAMPLE=$(basename &quot;${BAM}&quot; .rmdup.bam)
+
+echo &quot;Processing sample ${SAMPLE} with BAM file ${BAM}&quot;
+
+# Apply HEARTY
+
+#All scaffold 1
+MAXDEPTH=&quot;50&quot;
+MINDEPTH=&quot;4&quot;
+
+python3 /projects/erode/people/qhk515/software/HEARTY/HEARTY.py --bam ${BAM} \
+    -o ${SAMPLE}.allscaf1 --cores ${SLURM_CPUS_PER_TASK} \
+    --regions &quot;scaffold_1&quot; --angsd /opt/shared_software/shared_envmodules/conda/angsd-0.940/bin/angsd --force \
+    --threshold 0.15 \
+    --threshold 0.20 \
+    --threshold 0.25 \
+    --threshold 0.30 \
+    --min-depth ${MINDEPTH} \
+    --max-depth ${MAXDEPTH} \
+    --reuse-existing
+echo &quot;Finished running HEARTY for $SAMPLE &quot;
+
+exit 0
+</code></pre>
+</details>
+<h2>2. Explore minor allele balance outputs</h2>
+<p>Now we want to run the scripts that calculate the frequencies of each kind of mutation. This creates individual plots:</p>
+<details>
+<summary> Plot_MinorFreq.R wrapper </summary>
+<pre><code class="language-bash"># Later I can test different depth filters because default is 10x
+# I tend to run this in a screen session because it's quite quick
+module purge
+
+module load miniconda
+conda activate r_env
+
+DIR=&quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results&quot;
+cd $DIR
+
+mkdir -p plots_freq
+cd plots_freq
+
+for FILE in ${DIR}/*.minorfreq.txt; do
+    NAME=$(basename &quot;${FILE}&quot; &quot;.minorfreq.txt&quot;)
+    
+    Rscript  /projects/erode/people/qhk515/software/HEARTY/Plot_MinorFreq.R \
+    --minorfreq-file ${FILE} \
+    --out ${NAME} \
+    --format pdf
+done
+</code></pre>
+</details>
+<p>After running, the script you can examine the individual plots.</p>
+<p>Or you can create new plots in R:</p>
+<details>
+<summary> R script </summary>
+<pre><code class="language-R">
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(purrr)
+library(ggplot2)
+library(patchwork)
+
+
+# ------------------------------------------------------------
+# 1. Directory containing HEARTY minorfreq files
+# ------------------------------------------------------------
+indir &lt;- &quot;/Users/alexandrabrumwell/OneDrive - University of Kent/PhD stuff/PhD research/Research projects/01_OBP/Analyses/Het/HEARTY/minorfreq&quot;
+dir.create(indir, showWarnings = FALSE)
+
+setwd(indir)
+
+plot_dir &lt;- &quot;plots&quot;
+
+dir.create(plot_dir, showWarnings = FALSE)
+
+
+# ------------------------------------------------------------
+# 2. Find raw minorfreq files
+#    Adjust pattern if needed
+# ------------------------------------------------------------
+files &lt;- list.files(
+  path = indir,
+  pattern = &quot;minorfreq\\.txt$&quot;,
+  full.names = TRUE
+)
+
+# Exclude summary files
+files &lt;- files[!str_detect(files, &quot;summary&quot;)]
+
+files
+
+# ------------------------------------------------------------
+# 3. Read and combine all individuals
+# ------------------------------------------------------------
+
+pair_types &lt;- tibble(
+  pair = c(&quot;AC&quot;, &quot;AG&quot;, &quot;AT&quot;, &quot;CG&quot;, &quot;CT&quot;, &quot;GT&quot;),
+  mutation_type = c(
+    &quot;Transversion&quot;,
+    &quot;Transition&quot;,
+    &quot;Transversion&quot;,
+    &quot;Transversion&quot;,
+    &quot;Transition&quot;,
+    &quot;Transversion&quot;
+  )
+)
+
+minor_df &lt;- map_dfr(files, function(f) {
+  
+  sample_name &lt;- basename(f) %&gt;%
+    str_remove(&quot;\\.allscaf1\\.mincov4.*minorfreq\\.txt$&quot;)
+  
+  read_tsv(f, show_col_types = FALSE) %&gt;%
+    pivot_longer(
+      cols = c(AC, AG, AT, CG, CT, GT),
+      names_to = &quot;pair&quot;,
+      values_to = &quot;count&quot;
+    ) %&gt;%
+    left_join(pair_types, by = &quot;pair&quot;) %&gt;%
+    mutate(
+      sample = sample_name,
+      file = basename(f)
+    )
+})
+
+minor_df &lt;- minor_df %&gt;%
+  mutate(
+    pair = factor(pair, levels = c(&quot;AC&quot;, &quot;AG&quot;, &quot;AT&quot;, &quot;CG&quot;, &quot;CT&quot;, &quot;GT&quot;)),
+    mutation_type = factor(mutation_type, levels = c(&quot;Transition&quot;, &quot;Transversion&quot;))
+  ) %&gt;%
+  mutate(
+    Group = if_else(
+      str_starts(sample, &quot;O-&quot;),
+      &quot;Modern&quot;,
+      &quot;Historical&quot;
+    )
+  )
+
+str(minor_df)
+
+
+# Add coverage
+coverage_df &lt;- tribble(
+  ~sample, ~MeanCoverage,
+  &quot;O-76339-001&quot;, 7.18,
+  &quot;O-76349-001&quot;, 7.43,
+  &quot;O-76350-001&quot;, 6.95,
+  &quot;O-76521-001&quot;, 7.04,
+  &quot;O-76523-001&quot;, 7.08,
+  &quot;O-76526-001&quot;, 7.07,
+  &quot;O-76538-001&quot;, 7.07,
+  &quot;O-81171-001&quot;, 7.10,
+  &quot;O-81175-001&quot;, 7.09,
+  &quot;O-81179-001&quot;, 7.26,
+  &quot;O-81182-001&quot;, 6.97,
+  &quot;O-81186-001&quot;, 6.84,
+  &quot;O-81188-001&quot;, 7.01,
+  &quot;O-81192-001&quot;, 7.16,
+  &quot;O-81193-001&quot;, 7.10,
+  &quot;O-81196-001&quot;, 6.95,
+  &quot;O-81198-001&quot;, 6.08,
+  &quot;O-81201-001&quot;, 7.01,
+  &quot;O-81203-001&quot;, 6.93,
+  &quot;OBPI_501&quot;, 24.06,
+  &quot;OBPI_502&quot;, 9.97,
+  &quot;OBPI_503&quot;, 7.24,
+  &quot;OBPI_504&quot;, 17.67,
+  &quot;OBPI_505&quot;, 2.42,
+  &quot;OBPI_506&quot;, 4.86,
+  &quot;OBPI_507&quot;, 5.77,
+  &quot;OBPI_508&quot;, 3.91,
+  &quot;OBPII_ReHoI_501&quot;, 5.10,
+  &quot;OBPII_ReHoI_502&quot;, 6.71,
+  &quot;OBPII_ReHoI_503&quot;, 3.94,
+  &quot;OBPII_ReHoI_504&quot;, 7.60,
+  &quot;OBPII_ReHoI_505&quot;, 2.64,
+  &quot;OBPII_ReHoI_506&quot;, 4.03,
+  &quot;OBPII_ReHoI_507&quot;, 9.06,
+  &quot;OBPII_ReHoI_508&quot;, 10.24
+)
+
+# Join coverage
+minor_df &lt;- minor_df %&gt;%
+  left_join(coverage_df, by = &quot;sample&quot;)
+
+
+#Coverage labels for plots
+minor_df &lt;- minor_df %&gt;%
+  mutate(sample_cov = paste0(sample, &quot; (&quot;, MeanCoverage, &quot;x)&quot;))
+# Reorder samples
+minor_df &lt;- minor_df %&gt;%
+  mutate(sample_cov = forcats::fct_reorder(sample_cov, MeanCoverage))
+
+# ------------------------------------------------------------
+# PLOT 1: one panel per individual, shared y axis
+# ------------------------------------------------------------
+
+p &lt;- ggplot(
+  data = minor_df %&gt;% 
+    filter(Group == &quot;Historical&quot; | sample ==  &quot;O-76339-001&quot;),
+  #data = minor_df %&gt;% filter(sample ==  &quot;O-76339-001&quot;),
+  aes(
+    x = freq,
+    y = count,
+    colour = pair,
+    shape = mutation_type
+  )
+) +
+  geom_point(size = 0.9, alpha = 0.8) +
+  geom_line(aes(group = pair), linewidth = 0.5, alpha = 0.7) +
+  facet_wrap(Group ~ sample_cov, scales = &quot;fixed&quot;, ncol = 4) +
+  theme_bw() +
+  labs(
+    x = &quot;Allele balance / minor allele frequency&quot;,
+    y = &quot;Number of sites&quot;,
+    colour = &quot;Base change&quot;,
+    shape = &quot;Mutation type&quot;,
+    title = &quot;Minor allele balance distribution across historical samples OBP individuals (and one modern individual)&quot;,
+    subtitle = &quot;Samples ordered by increasing coverage.  &gt; 4x depth threshold was applied for all sites.&quot;
+  ) +
+  theme(
+    legend.position = &quot;bottom&quot;,
+    strip.text = element_text(size = 6),  
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    # Smaller text
+    legend.text = element_text(size = 8),
+    legend.title = element_text(size = 9),
+    
+  )
+p
+ggsave(
+  filename = file.path(plot_dir, &quot;01_OBP_minorfreq_all_individuals_shared_y.pdf&quot;),
+  plot = p,
+  width = 12,
+  height = 8
+)
+
+
+# ------------------------------------------------------------
+# PLOT 2: Cumulative thresholds
+# ------------------------------------------------------------
+cdf_pair_df &lt;- minor_df %&gt;%
+  group_by(sample, Group, sample_cov, pair, mutation_type, freq) %&gt;%
+  summarise(
+    total_sites = sum(count, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  ) %&gt;%
+  group_by(sample, Group, sample_cov, pair, mutation_type) %&gt;%
+  arrange(freq, .by_group = TRUE) %&gt;%
+  mutate(
+    cum_sites = cumsum(total_sites),
+    cum_prop_sites = cum_sites / sum(total_sites)
+  ) %&gt;%
+  ungroup()
+
+p_cdf_pair &lt;- ggplot(
+  data = cdf_pair_df %&gt;%
+    filter(Group == &quot;Historical&quot; | sample == &quot;O-76339-001&quot;) %&gt;%
+    filter(sample != &quot;OBPI_504&quot;),
+  aes(x = freq, y = cum_prop_sites, colour = pair, linetype = mutation_type)
+) +
+  geom_line(linewidth = 0.6, alpha = 0.8) +
+  geom_vline(
+    xintercept = c(0.05, 0.10, 0.20, 0.25, 0.30),
+    linetype = &quot;dashed&quot;,
+    alpha = 0.35
+  ) +
+  facet_wrap(~ sample_cov, scales = &quot;fixed&quot;, ncol = 4) +
+  theme_bw() +
+  labs(
+    x = &quot;Allele balance / minor allele frequency threshold&quot;,
+    y = &quot;Cumulative proportion of sites - only historical samples&quot;,
+    colour = &quot;Base change&quot;,
+    linetype = &quot;Mutation type&quot;,
+    title = &quot;Cumulative allele balance distribution by mutation class&quot;,
+    subtitle = &quot;Each line shows the cumulative proportion of sites for one base-change class&quot;
+  ) +
+  theme(
+    legend.position = &quot;bottom&quot;,
+    strip.text = element_text(size = 6),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+p_cdf_pair
+
+ggsave(
+  filename = file.path(plot_dir, &quot;02_OBP_cumulative_thresholds_by_mutation_pair.pdf&quot;),
+  plot = p_cdf_pair,
+  width = 12,
+  height = 8
+)
+
+
+# PLOT 3: TRANSITION/ TRANSVERSION RATIO
+titv_df &lt;- minor_df %&gt;%
+  
+  group_by(Group, sample, freq, mutation_type) %&gt;%
+  
+  summarise(count = sum(count), .groups = &quot;drop&quot;) %&gt;%
+  
+  pivot_wider(
+    names_from = mutation_type,
+    values_from = count
+  ) %&gt;%
+  
+  mutate(
+    TiTv = Transition / Transversion
+  )
+
+p3 &lt;- ggplot(
+  titv_df,
+  aes(x = freq, y = TiTv, group = sample, colour = Group)
+) +
+  geom_line(alpha = 0.25) +
+  stat_summary(
+    aes(group = Group),
+    fun = mean,
+    geom = &quot;line&quot;,
+    linewidth = 1.5
+  ) +
+  theme_bw() +
+  labs(
+    x = &quot;Allele balance&quot;,
+    y = &quot;Transition / Transversion ratio&quot;,
+    title = &quot;Ti/Tv ratio across allele balance&quot;
+  )
+p3 
+ggsave(file.path(plot_dir, &quot;03_TSTV_hist_mod.pdf&quot;), p3, width = 10, height = 8)
+
+</code></pre>
+</details>
+<h2>3. Calculate adaptive ROH thresholds</h2>
+<p>This workflow has three conceptual steps:</p>
+<blockquote>
+<ol>
+<li>Generate heterozygosity windows using different heterozygote thresholds</li>
+<li>Define ROHs relative to the heterozygosity distribution</li>
+<li>Compare how ROH/FROH changes across parameter combinations</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>Importantly, this analysis uses an alpha value which scales the ROH thresholds (i.e. how many het windows are allowed in a ROH) relative to the data itself because baseline heterozygoisty can vary across inividuals. So using a singular threshold would not be correct or compareable across indivudals. The higher the alpha, the higher the ROH threshold, i.e. the more lenient the threshold is.</p>
+</blockquote>
+<h3>3A. Generate heterozygosity windows using different heterozygote thresholds</h3>
+<details>
+<summary> Create wrapper for ROH_Plot_Tool.R  </summary>
+<p>Now we can run a script that calculates het per window and ROHs.</p>
+<p>This is based on Hernans script and the script from the HEARTY repository:</p>
+<pre><code class="language-R">R
+library(data.table)
+library(stringr)
+library(ggplot2)
+
+# Run this on HPC
+DIR &lt;- &quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH&quot;
+dir.create(DIR, showWarnings = FALSE)
+
+setwd(DIR)
+
+PLOT_DIR &lt;- &quot;plots&quot;
+dir.create(PLOT_DIR, showWarnings = FALSE)
+
+
+files &lt;- list.files(
+  path = &quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/&quot;,
+  pattern = &quot;windows(_trv)?\\.txt\\.gz$&quot;,
+  full.names = TRUE
+)
+files
+
+parse_hearty_windows &lt;- function(f) {
+
+  lines &lt;- readLines(gzfile(f), warn = FALSE)
+
+  m &lt;- str_match(
+    lines,
+    &quot;^(\\S+)\\s+(\\d+)-(\\d+):\\s+(\\d+)\\s+sites,\\s+(\\d+)\\s+sites\\s+with\\s+'HET',\\s+Proportion:\\s+([0-9.eE+-]+)&quot;
+  )
+
+  x &lt;- data.table(
+    chrom = m[, 2],
+    start = as.integer(m[, 3]),
+    end = as.integer(m[, 4]),
+    total_sites = as.integer(m[, 5]),
+    het_sites = as.integer(m[, 6]),
+    prop = as.numeric(m[, 7])
+  )
+
+  x &lt;- x[!is.na(chrom)]
+
+  base &lt;- basename(f)
+
+  x[, file := f]
+  x[, file_id := sub(&quot;\\.txt\\.gz$&quot;, &quot;&quot;, base)]
+  x[, sampleID := str_split_fixed(base, &quot;_het&quot;, 2)[, 1]]
+  x[, hetTsh := as.numeric(str_match(base, &quot;_het([0-9.]+)\\.mincov&quot;)[, 2])]
+  x[, site_set := ifelse(grepl(&quot;_trv\\.txt\\.gz$&quot;, base), &quot;trv&quot;, &quot;all&quot;)]
+  x[, window_bp := end - start + 1]
+  x[, callable_fraction := total_sites / window_bp]
+
+  return(x)
+}
+
+W &lt;- rbindlist(lapply(files, parse_hearty_windows), fill = TRUE)
+
+fwrite(W, paste0(DIR,&quot;/&quot;,&quot;HEARTY_all_windows_parsed.tsv.gz&quot;), sep = &quot;\t&quot;)
+
+W
+
+W[, prop := as.numeric(prop)]
+W[, total_sites := as.numeric(total_sites)]
+W[, het_sites := as.numeric(het_sites)]
+W[, hetTsh := as.numeric(hetTsh)]
+
+S &lt;- W[, .(
+  n_windows = as.integer(.N),
+  mean_het = as.numeric(mean(prop, na.rm = TRUE)),
+  median_het = as.numeric(median(prop, na.rm = TRUE)),
+  q001 = as.numeric(quantile(prop, 0.001, na.rm = TRUE)),
+  q005 = as.numeric(quantile(prop, 0.005, na.rm = TRUE)),
+  q01  = as.numeric(quantile(prop, 0.01,  na.rm = TRUE)),
+  q025 = as.numeric(quantile(prop, 0.025, na.rm = TRUE)),
+  q05  = as.numeric(quantile(prop, 0.05,  na.rm = TRUE)),
+  q10  = as.numeric(quantile(prop, 0.10,  na.rm = TRUE)),
+  median_sites = as.numeric(median(total_sites, na.rm = TRUE)),
+  mean_sites = as.numeric(mean(total_sites, na.rm = TRUE))
+), by = .(file, file_id, sampleID, hetTsh, site_set)]
+
+fwrite(S, paste0(DIR,&quot;/&quot;,&quot;HEARTY_window_het_summary_by_file.tsv&quot;), sep = &quot;\t&quot;)
+
+S[order(site_set, hetTsh, sampleID)]
+
+W[, log_prop := log10(prop + 1e-8)]
+
+# Plotting
+P &lt;- ggplot(W, aes(x = log_prop, colour = sampleID)) +
+  geom_density(linewidth = 0.4) +
+  facet_grid(site_set ~ hetTsh, scales = &quot;free_y&quot;) +
+  theme_bw() +
+  labs(
+    x = &quot;log10(window heterozygosity + 1e-8)&quot;,
+    y = &quot;Density&quot;,
+    title = &quot;Window heterozygosity distributions&quot;, 
+  ) +
+  theme(
+    legend.position = &quot;bottom&quot;,
+    
+    # Smaller text
+    legend.text = element_text(size = 6),
+    legend.title = element_text(size = 7),
+    
+    # Smaller spacing/keys
+    legend.key.size = unit(0.3, &quot;cm&quot;),
+    legend.spacing.x = unit(0.1, &quot;cm&quot;),
+    
+    # Optional
+    legend.margin = margin(0, 0, 0, 0)
+  )
+
+ggsave(paste0(PLOT_DIR,&quot;/&quot;,&quot;HEARTY_window_heterozygosity_density.png&quot;), P, width = 14, height = 8)
+
+# Create alpha values
+alpha_grid &lt;- c(0.10, 0.20, 0.30, 0.50)
+
+Adaptive &lt;- S[, .(alpha = alpha_grid),
+              by = .(file, file_id, sampleID, hetTsh, site_set, median_het)]
+
+Adaptive[, roh_threshold := median_het * alpha]
+Adaptive[, threshold_type := paste0(&quot;file_median_x&quot;, alpha)]
+
+fwrite(Adaptive, paste0(DIR,&quot;/&quot;,&quot;HEARTY_adaptive_roh_thresholds_by_file.tsv&quot;), sep = &quot;\t&quot;)
+
+Adaptive[order(site_set, hetTsh, sampleID, alpha)]
+
+Pooled &lt;- W[, .(
+  pooled_mean_het = mean(prop, na.rm = TRUE),
+  pooled_median_het = median(prop, na.rm = TRUE),
+  pooled_q01 = quantile(prop, 0.01, na.rm = TRUE),
+  pooled_q05 = quantile(prop, 0.05, na.rm = TRUE),
+  pooled_q10 = quantile(prop, 0.10, na.rm = TRUE)
+), by = .(hetTsh, site_set)]
+
+Pooled_alpha &lt;- Pooled[, .(alpha = alpha_grid),
+                       by = .(hetTsh, site_set, pooled_median_het)]
+
+Pooled_alpha[, roh_threshold := pooled_median_het * alpha]
+Pooled_alpha[, threshold_type := paste0(&quot;pooled_median_x&quot;, alpha)]
+
+fwrite(Pooled_alpha, paste0(DIR,&quot;/&quot;,&quot;HEARTY_pooled_roh_thresholds_by_class.tsv&quot;), sep = &quot;\t&quot;)
+
+Pooled_alpha[order(site_set, hetTsh, alpha)]
+names(Pooled_alpha)
+
+
+ROH_Plot_Tool &lt;- &quot;/projects/erode/people/qhk515/software/HEARTY/ROH_Plot_Tool.R&quot;
+
+
+# Check available values
+sort(unique(Pooled_alpha$hetTsh))
+sort(unique(Pooled_alpha$alpha))
+
+# Choose which HEARTY heterozygosity thresholds to include
+use_het &lt;- c(0.15, 0.20, 0.25, 0.30)
+
+# Choose which ROH-threshold multipliers to include
+use_alpha &lt;- c(0.20, 0.30, 0.50)
+
+# Filter pooled threshold table
+thresholds_to_use &lt;- Pooled_alpha[
+  hetTsh %in% use_het &amp; alpha %in% use_alpha
+]
+
+thresholds_to_use
+
+file_info &lt;- unique(S[, .(file, file_id, sampleID, hetTsh, site_set)])
+
+Jobs &lt;- merge(
+  file_info,
+  thresholds_to_use,
+  by = c(&quot;hetTsh&quot;, &quot;site_set&quot;),
+  allow.cartesian = TRUE
+)
+
+Jobs[, out_prefix := paste0(
+  &quot;roh_sensitivity/&quot;,
+  file_id,
+  &quot;_&quot;,
+  threshold_type,
+  &quot;_roh&quot;,
+  signif(roh_threshold, 3)
+)]
+
+Jobs[, pdf := paste0(out_prefix, &quot;.pdf&quot;)]
+Jobs[, summary := paste0(out_prefix, &quot;_summary.txt&quot;)]
+
+Jobs[, cmd := sprintf(
+  paste(
+    'Rscript &quot;%s&quot;',
+    '--mode single',
+    '--input &quot;%s&quot;',
+    '--output-pdf &quot;%s&quot;',
+    '--min-length-mb 10',
+    '--max-scaffolds 40',
+    '--fill-cap auto',
+    '--fill-cap-scale 0.8',
+    '--bin-size-bp 500000',
+    '--fallback-resolution 100',
+    '--roh-threshold %.8g',
+    '2&gt;&amp;1 | tee &quot;%s&quot;'
+  ),
+  ROH_Plot_Tool,
+  file,
+  pdf,
+  roh_threshold,
+  summary
+)]
+
+writeLines(
+  c(&quot;#!/bin/bash&quot;, &quot;mkdir -p roh_sensitivity&quot;, Jobs$cmd),
+  &quot;run_roh_sensitivity.sh&quot;
+)
+
+fwrite(Jobs, paste0(DIR,&quot;/&quot;,&quot;ROH_sensitivity_jobs.tsv&quot;), sep = &quot;\t&quot;)
+q()
+</code></pre>
+</details>
+<h3>3B. Run ROH script</h3>
+<p>Now you can submit this script in a screen session: <code>bash run_roh_sensitivity.sh</code></p>
+<details>
+<summary> Optional: exploratory fixed-threshold ROH run </summary>
+<pre><code class="language-bash"># ROH PLOTS
+module purge
+module load miniconda
+conda activate r_env
+
+ROH_Plot_Tool=&quot;/projects/erode/people/qhk515/software/HEARTY/ROH_Plot_Tool.R&quot;
+
+DIR=&quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH/&quot;
+cd $DIR
+
+for FILE in ${DIR}/O-76339-001*window*gz; do
+    for THR in 0.0001 0.0005 0.001; do
+
+
+    OUT=$(basename ${FILE} .txt.gz)
+    PDF=&quot;${OUT}_roh_${THR}.pdf&quot;
+    SUMMARY=&quot;${OUT}_roh_${THR}_summary.txt&quot;
+
+    echo &quot;Running:&quot;
+    echo &quot;Input:   ${FILE}&quot;
+    echo &quot;PDF:     ${PDF}&quot;
+    echo &quot;Summary: ${SUMMARY}&quot;
+
+    Rscript &quot;${ROH_Plot_Tool}&quot; \
+      --mode single \
+      --input &quot;${FILE}&quot; \
+      --output-pdf &quot;${PDF}&quot; \
+      --min-length-mb 10   \
+      --max-scaffolds 40 \
+      --fill-cap auto --fill-cap-scale 0.8 \
+      --bin-size-bp 500000 \
+      --fallback-resolution 100 \
+      --roh-threshold &quot;${THR}&quot; 2&gt;&amp;1 | tee &quot;${SUMMARY}&quot;
+      
+  done
+done
+</code></pre>
+</details>
+<h3>3C. Summarise ROH outputs</h3>
+<details> 
+<summary> Summary script </summary>
+Next,  we run a script that parses out all the ROH summary files into one big file:
+<pre><code class="language-bash">#!/bin/bash
+
+DIR=&quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH/roh_sensitivity&quot;
+cd $DIR
+
+OUT=&quot;ROH_summary_all.tsv&quot;
+
+echo -e &quot;file\tsample\tthreshold\tmean_het_all\tmedian_het_all\trows_plotted\tmean_het_plotted\tmedian_het_plotted\traw_roh_bins\tbridged_roh_bins\tgenome_size_bp\tn_windows\twindow_size_bp\tFROH_raw_100kb\tROH_bp_raw_100kb\tFROH_raw_1Mb\tROH_bp_raw_1Mb\tFROH_raw_5Mb\tROH_bp_raw_5Mb\tFROH_bridged_100kb\tROH_bp_bridged_100kb\tFROH_bridged_1Mb\tROH_bp_bridged_1Mb\tFROH_bridged_5Mb\tROH_bp_bridged_5Mb&quot; &gt; &quot;${OUT}&quot;
+
+for f in *_summary.txt; do
+
+  awk -v file=&quot;$f&quot; '
+  BEGIN {
+    mean_all=&quot;NA&quot;; median_all=&quot;NA&quot;;
+    rows_plotted=&quot;NA&quot;; mean_plotted=&quot;NA&quot;; median_plotted=&quot;NA&quot;;
+    raw_bins=&quot;NA&quot;; bridged_bins=&quot;NA&quot;;
+    genome_bp=&quot;NA&quot;; n_windows=&quot;NA&quot;; window_bp=&quot;NA&quot;;
+
+    froh_raw_100=&quot;NA&quot;; rohbp_raw_100=&quot;NA&quot;;
+    froh_raw_1=&quot;NA&quot;; rohbp_raw_1=&quot;NA&quot;;
+    froh_raw_5=&quot;NA&quot;; rohbp_raw_5=&quot;NA&quot;;
+
+    froh_bridged_100=&quot;NA&quot;; rohbp_bridged_100=&quot;NA&quot;;
+    froh_bridged_1=&quot;NA&quot;; rohbp_bridged_1=&quot;NA&quot;;
+    froh_bridged_5=&quot;NA&quot;; rohbp_bridged_5=&quot;NA&quot;;
+
+    section=&quot;&quot;;
+  }
+
+  /^Mean heterozygosity \(all parsed windows\):/ {
+    mean_all=$NF
+  }
+
+  /^Median heterozygosity \(all parsed windows\):/ {
+    median_all=$NF
+  }
+
+  /^Rows used for plotted scaffolds:/ {
+    rows_plotted=$NF
+  }
+
+  /^Mean heterozygosity \(plotted scaffolds\):/ {
+    mean_plotted=$NF
+  }
+
+  /^Median heterozygosity \(plotted scaffolds\):/ {
+    median_plotted=$NF
+  }
+
+  /^Raw ROH bins flagged:/ {
+    raw_bins=$NF
+  }
+
+  /^Bridged ROH bins flagged:/ {
+    bridged_bins=$NF
+  }
+
+  /^Genome size used for FROH:/ {
+    genome_bp=$6
+
+    tmp=$0
+    sub(/^.*n_windows=/, &quot;&quot;, tmp)
+    sub(/ .*/, &quot;&quot;, tmp)
+    n_windows=tmp
+
+    tmp2=$0
+    sub(/^.*x /, &quot;&quot;, tmp2)
+    sub(/ bp.*$/, &quot;&quot;, tmp2)
+    window_bp=tmp2
+  }
+
+  /^FROH \(unbridged\/raw/ {
+    section=&quot;raw&quot;
+  }
+
+  /^FROH \(bridged/ {
+    section=&quot;bridged&quot;
+  }
+
+  /^[[:space:]]*&gt;100kb:/ {
+    val=$2
+    bp=$3
+    gsub(/\(ROH/, &quot;&quot;, bp)
+    gsub(/bp=/, &quot;&quot;, bp)
+    gsub(/\)/, &quot;&quot;, bp)
+
+    if (section==&quot;raw&quot;) {
+      froh_raw_100=val
+      rohbp_raw_100=bp
+    } else if (section==&quot;bridged&quot;) {
+      froh_bridged_100=val
+      rohbp_bridged_100=bp
+    }
+  }
+
+  /^[[:space:]]*&gt;1Mb:/ {
+    val=$2
+    bp=$3
+    gsub(/\(ROH/, &quot;&quot;, bp)
+    gsub(/bp=/, &quot;&quot;, bp)
+    gsub(/\)/, &quot;&quot;, bp)
+
+    if (section==&quot;raw&quot;) {
+      froh_raw_1=val
+      rohbp_raw_1=bp
+    } else if (section==&quot;bridged&quot;) {
+      froh_bridged_1=val
+      rohbp_bridged_1=bp
+    }
+  }
+
+  /^[[:space:]]*&gt;5Mb:/ {
+    val=$2
+    bp=$3
+    gsub(/\(ROH/, &quot;&quot;, bp)
+    gsub(/bp=/, &quot;&quot;, bp)
+    gsub(/\)/, &quot;&quot;, bp)
+
+    if (section==&quot;raw&quot;) {
+      froh_raw_5=val
+      rohbp_raw_5=bp
+    } else if (section==&quot;bridged&quot;) {
+      froh_bridged_5=val
+      rohbp_bridged_5=bp
+    }
+  }
+
+  END {
+    base=file
+    sub(/^.*\//, &quot;&quot;, base)
+    sub(/_summary\.txt$/, &quot;&quot;, base)
+
+    sample=base
+    threshold=&quot;NA&quot;
+
+      if (base ~ /_roh[^_]+$/) {
+
+        threshold = base
+        sub(/^.*_roh/, &quot;&quot;, threshold)
+
+        sample = base
+        sub(/_roh[^_]+$/, &quot;&quot;, sample)
+      }
+
+    print file &quot;\t&quot; sample &quot;\t&quot; threshold &quot;\t&quot; \
+          mean_all &quot;\t&quot; median_all &quot;\t&quot; rows_plotted &quot;\t&quot; \
+          mean_plotted &quot;\t&quot; median_plotted &quot;\t&quot; \
+          raw_bins &quot;\t&quot; bridged_bins &quot;\t&quot; \
+          genome_bp &quot;\t&quot; n_windows &quot;\t&quot; window_bp &quot;\t&quot; \
+          froh_raw_100 &quot;\t&quot; rohbp_raw_100 &quot;\t&quot; \
+          froh_raw_1 &quot;\t&quot; rohbp_raw_1 &quot;\t&quot; \
+          froh_raw_5 &quot;\t&quot; rohbp_raw_5 &quot;\t&quot; \
+          froh_bridged_100 &quot;\t&quot; rohbp_bridged_100 &quot;\t&quot; \
+          froh_bridged_1 &quot;\t&quot; rohbp_bridged_1 &quot;\t&quot; \
+          froh_bridged_5 &quot;\t&quot; rohbp_bridged_5
+  }
+  ' &quot;$f&quot; &gt;&gt; &quot;${OUT}&quot;
+
+done
+
+echo &quot;Wrote: ${OUT}&quot;
+
+</code></pre>
+</details>
+<h3>3D. Create plots</h3>
+<p>Use this summary file to create plots for ROH and het. We can create this using R on the HPC or locally.</p>
+<details>
+<summary> R script - ROH plots </summary> 
+<pre><code class="language-R"># ============================================================
+# Plot HEARTY ROH sensitivity summaries
+# Input: ROH_summary_all.tsv
+# ============================================================
+
+library(data.table)
+library(stringr)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(httpgd)
+
+# If you want to see plots live:
+# hgd()
+# ----------------------------
+# 1. Paths
+# ----------------------------
+
+DIR &lt;- &quot;/projects/erode/people/qhk515/01_OBP/popgen_analyses/het/HEARTY/results/ROH/roh_sensitivity&quot;
+
+#DIR &lt;- &quot;~/Library/CloudStorage/OneDrive-UniversityofKent/PhD stuff/PhD research/Research projects/01_OBP/Analyses/Het/HEARTY/roh&quot;
+
+INFILE &lt;- file.path(DIR, &quot;ROH_summary_all.tsv&quot;)
+PLOT_DIR &lt;- file.path(DIR, &quot;plots_ROH_summary&quot;)
+
+dir.create(PLOT_DIR, showWarnings = FALSE, recursive = TRUE)
+
+# ----------------------------
+# 2. Read summary file
+# ----------------------------
+
+ROH &lt;- fread(INFILE, na.strings = c(&quot;NA&quot;, &quot;&quot;, &quot;NaN&quot;))
+
+# Convert numeric columns
+num_cols &lt;- setdiff(names(ROH), c(&quot;file&quot;, &quot;sample&quot;))
+
+ROH[, (num_cols) := lapply(.SD, as.numeric), .SDcols = num_cols]
+
+# ----------------------------
+# 3. Parse sample / thresholds
+# ----------------------------
+
+ROH[, sample_base := sample]
+
+
+# Sample ID = everything before &quot;.allscaf1_het&quot;
+ROH[, sampleID := str_match(sample_base, &quot;^(.+?)\\.allscaf1_het&quot;)[, 2]]
+
+# HEARTY heterozygote threshold
+ROH[, hetTsh := as.numeric(str_match(sample_base, &quot;_het([0-9.]+)\\.mincov&quot;)[, 2])]
+
+# Site set: transversions-only or all sites
+ROH[, site_set := fifelse(str_detect(sample_base, &quot;_trv|\\.trv|trv&quot;), &quot;trv&quot;, &quot;all&quot;)]
+
+# ROH threshold multiplier alpha
+ROH[, alpha := as.numeric(str_match(sample_base, &quot;pooled_median_x([0-9.]+)&quot;)[, 2])]
+
+# Fallback: if alpha is not in sample name, infer from threshold / median_het_all
+ROH[is.na(alpha) &amp; !is.na(threshold) &amp; !is.na(median_het_all),
+    alpha := threshold / median_het_all]
+
+# Make labels cleaner
+ROH[, hetTsh_f := factor(hetTsh, levels = sort(unique(hetTsh)))]
+ROH[, alpha_f := factor(alpha, levels = sort(unique(alpha)))]
+
+# Check parsing
+print(ROH[, .N, by = .(sampleID, hetTsh, site_set, alpha)][order(sampleID, site_set, hetTsh, alpha)])
+
+
+# Samples I am interested in
+coverage_df &lt;- tribble(
+  ~sample, ~MeanCoverage,
+  &quot;O-76339-001&quot;, 7.18,
+  &quot;O-76349-001&quot;, 7.43,
+  &quot;O-76350-001&quot;, 6.95,
+  &quot;O-76521-001&quot;, 7.04,
+  &quot;O-76523-001&quot;, 7.08,
+  &quot;O-76526-001&quot;, 7.07,
+  &quot;O-76538-001&quot;, 7.07,
+  &quot;O-81171-001&quot;, 7.10,
+  &quot;O-81175-001&quot;, 7.09,
+  &quot;O-81179-001&quot;, 7.26,
+  &quot;O-81182-001&quot;, 6.97,
+  &quot;O-81186-001&quot;, 6.84,
+  &quot;O-81188-001&quot;, 7.01,
+  &quot;O-81192-001&quot;, 7.16,
+  &quot;O-81193-001&quot;, 7.10,
+  &quot;O-81196-001&quot;, 6.95,
+  &quot;O-81198-001&quot;, 6.08,
+  &quot;O-81201-001&quot;, 7.01,
+  &quot;O-81203-001&quot;, 6.93,
+  &quot;OBPI_501&quot;, 24.06,
+  &quot;OBPI_502&quot;, 9.97,
+  &quot;OBPI_503&quot;, 7.24,
+  &quot;OBPI_504&quot;, 17.67,
+  &quot;OBPI_505&quot;, 2.42,
+  &quot;OBPI_506&quot;, 4.86,
+  &quot;OBPI_507&quot;, 5.77,
+  &quot;OBPI_508&quot;, 3.91,
+  &quot;OBPII_ReHoI_501&quot;, 5.10,
+  &quot;OBPII_ReHoI_502&quot;, 6.71,
+  &quot;OBPII_ReHoI_503&quot;, 3.94,
+  &quot;OBPII_ReHoI_504&quot;, 7.60,
+  &quot;OBPII_ReHoI_505&quot;, 2.64,
+  &quot;OBPII_ReHoI_506&quot;, 4.03,
+  &quot;OBPII_ReHoI_507&quot;, 9.06,
+  &quot;OBPII_ReHoI_508&quot;, 10.24
+) %&gt;%
+  mutate(
+    Group = if_else(str_starts(sample, &quot;O-&quot;),
+                    &quot;Modern&quot;,
+                    &quot;Historical&quot;)
+  )
+
+# Join dataframes
+ROH &lt;- ROH %&gt;%
+  left_join(
+    coverage_df,
+    by = c(&quot;sampleID&quot; = &quot;sample&quot;)
+  )
+
+# ============================================================
+# 4. PLOT 1: Mean heterozygosity across HEARTY thresholds
+# ============================================================
+# Create fixed colour mapping
+sample_cols &lt;- setNames(
+  scales::hue_pal()(length(unique(het_summary$sampleID))),
+  sort(unique(het_summary$sampleID))
+)
+
+het_summary &lt;- unique(
+  ROH[, .(
+    sampleID,
+    hetTsh,
+    hetTsh_f,
+    site_set,
+    mean_het_all,
+    MeanCoverage,
+    Group
+  )]
+)
+
+
+p_het &lt;- ggplot(
+  het_summary %&gt;% filter(Group == &quot;Historical&quot;),
+  aes(x = hetTsh, y = mean_het_all, colour = sampleID, group = sampleID, linetype = Group)
+) +
+  geom_point(size = 2.5) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(~ site_set, scales = &quot;free_y&quot;) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = &quot;Mean heterozygosity across HEARTY thresholds - ONLY HISTORICAL&quot;,
+    x = &quot;HEARTY heterozygote threshold&quot;,
+    y = &quot;Mean window heterozygosity&quot;,
+    colour = &quot;sampleID&quot;
+  ) +
+  theme(
+    strip.text = element_text(size = 6),  
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    # Smaller text
+    legend.text = element_text(size = 8),
+    legend.title = element_text(size = 9),
+    
+  )
+
+print(p_het)
+ggsave(
+  file.path(PLOT_DIR, &quot;01_mean_heterozygosity_by_hetTsh_historical.png&quot;),
+  p_het,
+  width = 14,
+  height = 7,
+  dpi = 300
+)
+
+ # ============================================================
+# 5. PLOT 2: Sensitivity of FROH raw &gt;1Mb
+# ============================================================
+
+p_raw_1Mb &lt;- ggplot(
+  ROH,
+  aes(x = alpha, y = FROH_raw_1Mb, colour = sampleID, group = sampleID, linetype = Group)
+) +
+  geom_point(size = 2.2) +
+  geom_line(linewidth = 0.7) +
+  facet_grid(site_set + Group ~ hetTsh_f, scales = &quot;fixed&quot;) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = &quot;Sensitivity of FROH &gt;1Mb to ROH threshold&quot;,
+    x = &quot;ROH threshold multiplier: pooled median × alpha&quot;,
+    y = &quot;FROH raw &gt;1Mb&quot;,
+    colour = &quot;sampleID&quot;
+  )
+print(p_raw_1Mb)
+
+ggsave(
+  file.path(PLOT_DIR, &quot;02_FROH_raw_1Mb_sensitivity.png&quot;),
+  p_raw_1Mb,
+  width = 14,
+  height = 8,
+  dpi = 300
+)
+
+# ============================================================
+# 6. Sensitivity of FROH raw &gt;5Mb
+# ============================================================
+p_raw_5Mb &lt;- ggplot(
+  ROH,
+  aes(x = alpha, y = FROH_raw_5Mb, colour = sampleID, group = sampleID, linetype = Group)
+) +
+  geom_point(size = 2.2) +
+  geom_line(linewidth = 0.7) +
+  facet_grid(site_set + Group ~ hetTsh_f, scales = &quot;fixed&quot;) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = &quot;Sensitivity of FROH &gt;5Mb to ROH threshold&quot;,
+    x = &quot;ROH threshold multiplier: pooled median × alpha&quot;,
+    y = &quot;FROH raw &gt;5Mb&quot;,
+    colour = &quot;sampleID&quot;
+  )
+print(p_raw_5Mb)
+ggsave(
+  file.path(PLOT_DIR, &quot;03_FROH_raw_5Mb_sensitivity.png&quot;),
+  p_raw_5Mb,
+  width = 14,
+  height = 8,
+  dpi = 300
+)
+
+# ============================================================
+# 7. Raw versus bridged FROH
+# ============================================================
+
+ROH_long &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  select(
+    sampleID, hetTsh, hetTsh_f, site_set, alpha,
+    FROH_raw_1Mb, FROH_bridged_1Mb,
+    FROH_raw_5Mb, FROH_bridged_5Mb
+  ) %&gt;%
+  pivot_longer(
+    cols = starts_with(&quot;FROH_&quot;),
+    names_to = c(&quot;bridge&quot;, &quot;length_class&quot;),
+    names_pattern = &quot;FROH_(raw|bridged)_(1Mb|5Mb)&quot;,
+    values_to = &quot;FROH&quot;
+  ) %&gt;%
+  mutate(
+    bridge = factor(bridge, levels = c(&quot;bridged&quot;, &quot;raw&quot;)),
+    length_class = factor(length_class, levels = c(&quot;1Mb&quot;, &quot;5Mb&quot;),
+                          labels = c(&quot;&gt;1Mb&quot;, &quot;&gt;5Mb&quot;))
+  )
+
+p_raw_bridged &lt;- ggplot(
+  ROH_long,
+  aes(
+    x = alpha,
+    y = FROH,
+    colour = sampleID,
+    group = interaction(sampleID, bridge),
+    linetype = bridge
+  )
+) +
+  geom_point(size = 1.8) +
+  geom_line(linewidth = 0.7) +
+  facet_grid(length_class + site_set ~ hetTsh_f) +
+  scale_colour_manual(values = sample_cols) +
+  theme_bw() +
+  labs(
+    title = &quot;Raw versus bridged FROH&quot;,
+    x = &quot;ROH threshold multiplier: pooled median × alpha&quot;,
+    y = &quot;FROH&quot;,
+    colour = &quot;sampleID&quot;,
+    linetype = &quot;bridge&quot;
+  )
+print(p_raw_bridged)
+ggsave(
+  file.path(PLOT_DIR, &quot;04_FROH_raw_vs_bridged.png&quot;),
+  p_raw_bridged,
+  width = 16,
+  height = 12,
+  dpi = 300
+)
+
+# ============================================================
+# 8. All-sites versus transversions-only FROH raw &gt;1Mb
+# ============================================================
+
+wide_1Mb &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  select(sampleID, hetTsh, hetTsh_f, alpha, alpha_f, site_set, FROH_raw_1Mb, MeanCoverage, Group) %&gt;%
+  pivot_wider(
+    names_from = site_set,
+    values_from = FROH_raw_1Mb
+  ) %&gt;%
+  filter(!is.na(all), !is.na(trv))
+
+p_all_trv_1Mb &lt;- ggplot(
+  wide_1Mb,
+  aes(x = all, y = trv, colour = sampleID)
+) +
+  geom_abline(slope = 1, intercept = 0, linetype = &quot;dashed&quot;, colour = &quot;black&quot;) +
+  geom_point(size = 2.4) +
+  facet_grid(alpha_f ~ hetTsh_f) +
+  scale_colour_manual(values = sample_cols) +
+  geom_text_repel(
+    aes(label = sampleID),
+    size = 2.5,
+    max.overlaps = 15,
+    show.legend = FALSE,
+    # Push labels further away
+    force = 10,
+    force_pull = 0.5,
+    # More spacing
+    box.padding = 0.8,
+    point.padding = 0.8,
+    # Segment line
+    segment.alpha = 0.5,
+    segment.size = 0.3
+  ) + 
+  theme_bw() +
+  labs(
+    title = &quot;All-sites versus transversions-only FROH&quot;,
+    x = &quot;All-sites FROH raw &gt;1Mb&quot;,
+    y = &quot;Transversions-only FROH raw &gt;1Mb&quot;,
+    colour = &quot;sampleID&quot;
+  )
+print(p_all_trv_1Mb)
+ggsave(
+  file.path(PLOT_DIR, &quot;05_all_vs_trv_FROH_raw_1Mb.png&quot;),
+  p_all_trv_1Mb,
+  width = 18,
+  height = 6,
+  dpi = 300
+)
+
+# ============================================================
+# 9. All-sites versus transversions-only FROH raw &gt;5Mb
+# ============================================================
+
+wide_5Mb &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  select(sampleID, hetTsh, hetTsh_f, alpha, alpha_f, site_set, FROH_raw_5Mb) %&gt;%
+  pivot_wider(
+    names_from = site_set,
+    values_from = FROH_raw_5Mb
+  ) %&gt;%
+  filter(!is.na(all), !is.na(trv))
+
+p_all_trv_5Mb &lt;- ggplot(
+  wide_5Mb,
+  aes(x = all, y = trv, colour = sampleID)
+) +
+  geom_abline(slope = 1, intercept = 0, linetype = &quot;dashed&quot;, colour = &quot;black&quot;) +
+  geom_point(size = 2.4) +
+  facet_grid(alpha_f ~ hetTsh_f) +
+  scale_colour_manual(values = sample_cols) +
+  geom_text_repel(
+    aes(label = sampleID),
+    size = 2.5,
+    max.overlaps = 15,
+    show.legend = FALSE,
+    # Push labels further away
+    force = 10,
+    force_pull = 0.5,
+    # More spacing
+    box.padding = 0.8,
+    point.padding = 0.8,
+    # Segment line
+    segment.alpha = 0.5,
+    segment.size = 0.3
+  ) + 
+  theme_bw() +
+  labs(
+    title = &quot;All-sites versus transversions-only long ROH&quot;,
+    x = &quot;All-sites FROH raw &gt;5Mb&quot;,
+    y = &quot;Transversions-only FROH raw &gt;5Mb&quot;,
+    colour = &quot;sampleID&quot;
+  )
+print(p_all_trv_5Mb)
+ggsave(
+  file.path(PLOT_DIR, &quot;06_all_vs_trv_FROH_raw_5Mb.png&quot;),
+  p_all_trv_5Mb,
+  width = 18,
+  height = 6,
+  dpi = 300
+)
+
+# ============================================================
+# 10. Sensitivity range across ROH thresholds
+# ============================================================
+
+range_df &lt;- ROH %&gt;%
+  as_tibble() %&gt;%
+  group_by(sampleID, site_set, Group) %&gt;%
+  summarise(
+    min_FROH = min(FROH_raw_1Mb, na.rm = TRUE),
+    mean_FROH = mean(FROH_raw_1Mb, na.rm = TRUE),
+    max_FROH = max(FROH_raw_1Mb, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+sample_order &lt;- range_df %&gt;%
+  group_by(sampleID) %&gt;%
+  summarise(mean_order = mean(mean_FROH, na.rm = TRUE), .groups = &quot;drop&quot;) %&gt;%
+  arrange(mean_order) %&gt;%
+  pull(sampleID)
+
+range_df &lt;- range_df %&gt;%
+  mutate(sampleID = factor(sampleID, levels = sample_order))
+
+p_range &lt;- ggplot(
+  range_df,
+  aes(y = sampleID, colour = site_set)
+) +
+  geom_segment(
+    aes(x = min_FROH, xend = max_FROH, yend = sampleID),
+    linewidth = 0.8
+  ) +
+  geom_point(aes(x = mean_FROH), size = 3) +
+  theme_bw() +
+  labs(
+    title = &quot;Sensitivity range across ROH thresholds&quot;,
+    x = &quot;FROH raw &gt;1Mb, mean and range across settings&quot;,
+    y = &quot;Sample&quot;,
+    colour = &quot;site_set&quot;
+  )
+print(p_range)
+ggsave(
+  file.path(PLOT_DIR, &quot;07_FROH_sensitivity_range_by_sample.png&quot;),
+  p_range,
+  width = 12,
+  height = 8,
+  dpi = 300
+)
+
+
+
+
+# PLOT 1: COV VS HET BY THRESHOLD
+p_cov_het &lt;- ggplot(
+  het_summary,
+  aes(x = MeanCoverage, y = mean_het_all, colour = Group)
+) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  geom_smooth(method = &quot;lm&quot;, se = FALSE) +
+  facet_grid(site_set ~ hetTsh_f, scales = &quot;free_y&quot;) +
+  theme_bw() +
+  labs(
+    title = &quot;Effect of coverage on mean window heterozygosity&quot;,
+    x = &quot;Mean coverage&quot;,
+    y = &quot;Mean window heterozygosity&quot;,
+    colour = &quot;Group&quot;
+  )
+
+print(p_cov_het)
+
+ggsave(
+  file.path(PLOT_DIR, &quot;08_coverage_vs_mean_heterozygosity.png&quot;),
+  p_cov_het,
+  width = 14,
+  height = 8,
+  dpi = 300
+)
+
+
+
+# ----------------------------
+# 11. Save parsed table
+# ----------------------------
+
+fwrite(
+  ROH,
+  file.path(PLOT_DIR, &quot;ROH_summary_all_parsed_for_plotting.tsv&quot;),
+  sep = &quot;\t&quot;
+)
+
+message(&quot;Done. Plots written to: &quot;, PLOT_DIR)
+
+</code></pre>
+
+</body>
+</html>
